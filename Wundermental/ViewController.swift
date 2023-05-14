@@ -38,11 +38,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        // Create a session configuration
         let configuration = ARWorldTrackingConfiguration()
-
-        // Run the view's session
+        
         sceneView.session.run(configuration)
     }
     
@@ -96,28 +93,21 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     let radius: CGFloat = 0.3
-    let segments = 30
+    let verticalSegments = 30
+    let horizontalSegments = 8
     let height: CGFloat = 0.001
     
     // ARSCNViewDelegate
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-        let boxGeometry = SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0.0)
-        let boxNode = SCNNode(geometry: boxGeometry)
-            
         let sphereNode = SCNNode()
 
-        let colors: [UIColor] = [
-            .red, .orange, .yellow, .green, .blue, .purple
-            // Add more colors here for additional segments
-        ]
-
-        for i in 0..<segments {
-            let phi1 = CGFloat(i) * .pi / CGFloat(segments - 1)
-            let phi2 = CGFloat(i+1) * .pi / CGFloat(segments - 1)
+        for i in 0..<horizontalSegments {
+            let phi1 = CGFloat(i) * .pi / 2 / CGFloat(horizontalSegments - 1)
+            let phi2 = CGFloat(i+1) * .pi / 2 / CGFloat(horizontalSegments - 1)
             
-            for j in 0..<segments {
-                let theta1 = CGFloat(j) * 2 * .pi / CGFloat(segments - 1)
-                let theta2 = CGFloat(j+1) * 2 * .pi / CGFloat(segments - 1)
+            for j in 0..<verticalSegments {
+                let theta1 = CGFloat(j) * 2 * .pi / CGFloat(verticalSegments - 1)
+                let theta2 = CGFloat(j+1) *  2  * .pi / CGFloat(verticalSegments - 1)
                 
                 // Calculate the vertices of the rectangle
                 let vertex1 = SCNVector3(radius * sin(phi1) * cos(theta1), radius * cos(phi1), radius * sin(phi1) * sin(theta1))
@@ -129,25 +119,17 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                 let vertices: [SCNVector3] = [vertex1, vertex2, vertex3, vertex4]
                 let vertexSource = SCNGeometrySource(vertices: vertices)
                 
-                // Determine if the rectangle should be filled or just an outline
-                let shouldFill = Bool.random()
-                
-                if shouldFill {
+                if Bool.random() {
                     // Fill the rectangle completely
                     let indices: [UInt16] = [0, 1, 2, 2, 3, 0]
                     let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
                     let element = SCNGeometryElement(data: indexData, primitiveType: .triangles, primitiveCount: indices.count / 3, bytesPerIndex: MemoryLayout<UInt16>.size)
                     let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
                     
-                    // Assign a random color from the colors array
-                    let colorIndex = Int.random(in: 0..<colors.count)
                     let material = SCNMaterial()
-                    material.diffuse.contents = colors[colorIndex]
-                    
-                    // Assign the material to the geometry
+                    material.diffuse.contents = UIColor.green
                     geometry.materials = [material]
                     
-                    // Create a node with the geometry and add it to the sphere node
                     let rectangleNode = SCNNode(geometry: geometry)
                     sphereNode.addChildNode(rectangleNode)
                 } else {
@@ -156,34 +138,24 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                     let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
                     let element = SCNGeometryElement(data: indexData, primitiveType: .line, primitiveCount: indices.count / 2, bytesPerIndex: MemoryLayout<UInt16>.size)
                     let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
-                                
-                                // Assign a random color for the outline
-                                let material = SCNMaterial()
-                                material.diffuse.contents = UIColor.black
-                                
-                                // Assign the material to the geometry
-                                geometry.materials = [material]
-                                
-                                // Create a node with the geometry and add it to the sphere node
-                                let rectangleNode = SCNNode(geometry: geometry)
-                                sphereNode.addChildNode(rectangleNode)
-                            }
-                        }
-                    }
+                    
+                    let material = SCNMaterial()
+                    material.diffuse.contents = UIColor.gray
+                    geometry.materials = [material]
+                    
+                    let rectangleNode = SCNNode(geometry: geometry)
+                    sphereNode.addChildNode(rectangleNode)
+                }
+                
+                if (i == 0) {
+                    break
+                }
+            }
+        }
 
         return sphereNode
-        //return ARDome(radius: 0.3, radialSegments: 10, verticalSegments: 10)
-    
-       // return boxNode
     }
     
-    func distance(from: SCNVector3, to: SCNVector3) -> Float {
-        let dx = from.x - to.x
-        let dy = from.y - to.y
-        let dz = from.z - to.z
-        return sqrt(dx*dx + dy*dy + dz*dz)
-    }
-   
     func session(_ session: ARSession, didFailWithError error: Error) {
         // Present an error message to the user
         
