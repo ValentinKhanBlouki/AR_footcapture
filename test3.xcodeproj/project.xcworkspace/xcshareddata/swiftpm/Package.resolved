@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "scenekit-scnline",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/maxxfrazer/SceneKit-SCNLine.git",
+      "state" : {
+        "revision" : "00bd83f3affae23a0a9375d1b1e4b58f5c3471d0",
+        "version" : "1.3.0"
+      }
+    }
+  ],
+  "version" : 2
+}
