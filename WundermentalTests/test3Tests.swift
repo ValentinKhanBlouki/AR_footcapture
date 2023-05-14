@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import test3
+@testable import Wundermental
 
 final class test3Tests: XCTestCase {
 
