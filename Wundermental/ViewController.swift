@@ -15,31 +15,23 @@ import SCNLine
 class ViewController: UIViewController, ARSCNViewDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
+    private var domeAnchor: ARAnchor!
+    
+    private var displayedDome: Dome!
+    private var radius: CGFloat = 0.3
+    private var horizontalSegments: Int = 10
+    private var verticalSegments: Int = 20
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Set the view's delegate
         sceneView.delegate = self
-        
-        // Create a new scene
         let scene = SCNScene()
-        
-        // Set the scene to the view
         sceneView.scene = scene
-        
-        // Show statistics such as fps and timing information
         sceneView.showsStatistics = true
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         sceneView.addGestureRecognizer(tapGesture)
-        
-        
-        let domeNode = Dome(radius: 0.3, horizontalSegments: 10, verticalSegments: 20, view: sceneView)
-        sceneView.scene.rootNode.addChildNode(domeNode)
-        domeNode.simdPosition = SIMD3<Float>(0, 0, 0)
-
-        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -52,31 +44,34 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        
-        // Pause the view's session
         sceneView.session.pause()
     }
     
     //MARK: Object Placement
     @objc
     func handleTap(_ sender: UITapGestureRecognizer){
+        if domeAnchor != nil {
+            sceneView.session.remove(anchor: domeAnchor)
+        }
+        
         let location = sender.location(in: sceneView) //get location in arSCNView
         let results = sceneView.hitTest(location, types: .estimatedHorizontalPlane)
         
         if let firstResult = results.first{
-            let anchor = ARAnchor(transform: firstResult.worldTransform)
-                    sceneView.session.add(anchor: anchor)
-            
-        }else{
+            domeAnchor = ARAnchor(transform: firstResult.worldTransform)
+            sceneView.session.add(anchor: domeAnchor)
+        }
+        else{
             print("Object placement failed - couldn't find a surface")
         }
     }
 
-    
-    // ARSCNViewDelegate
-    func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-        return Dome(radius: 0.3, horizontalSegments: 10, verticalSegments: 20, view: sceneView)
-
+        func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
+        if displayedDome != nil {
+            radius = displayedDome.radius
+        }
+        displayedDome = Dome(radius: radius, horizontalSegments: horizontalSegments, verticalSegments: verticalSegments, view: sceneView)
+        return displayedDome
     }
     
     func session(_ session: ARSession, didFailWithError error: Error) {
