@@ -11,12 +11,32 @@ import SceneKit
 class Dome: SCNNode {
     
     private var view: SCNView
-    private var initialPosition: SCNVector3 = SCNVector3Zero
+    
+    private var initialPinchScale: CGFloat = 1.0
+    private var initialRadius: CGFloat = 1.0
+    
+    var lastPanLocation: SCNVector3?
+    var panStartZ: CGFloat?
+    
+    public var radius: CGFloat
+    private var horizontalSegments : Int
+    private var verticalSegments : Int
+
     
     init(radius: CGFloat, horizontalSegments: Int, verticalSegments: Int, view: SCNView) {
         self.view = view
+        self.radius = radius
+        self.horizontalSegments = horizontalSegments
+        self.verticalSegments = verticalSegments
         super.init()
         
+        self.initialRadius = radius
+        createDome()
+        
+        enableDragging()
+    }
+    
+    func createDome() {
         for i in 0..<horizontalSegments {
             let phi1 = CGFloat(i) * .pi / 2 / CGFloat(horizontalSegments - 1)
             let phi2 = CGFloat(i+1) * .pi / 2 / CGFloat(horizontalSegments - 1)
@@ -31,11 +51,10 @@ class Dome: SCNNode {
                 let vertex3 = SCNVector3(radius * sin(phi2) * cos(theta2), radius * cos(phi2), radius * sin(phi2) * sin(theta2))
                 let vertex4 = SCNVector3(radius * sin(phi2) * cos(theta1), radius * cos(phi2), radius * sin(phi2) * sin(theta1))
                 
-                // Create a geometry element for the rectangle
                 let vertices: [SCNVector3] = [vertex1, vertex2, vertex3, vertex4]
                 let vertexSource = SCNGeometrySource(vertices: vertices)
                 
-                if Bool.random() {
+                if i % 2 == 0 {
                     // Fill the rectangle completely
                     let indices: [UInt16] = [0, 1, 2, 2, 3, 0]
                     let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
@@ -70,36 +89,61 @@ class Dome: SCNNode {
                 }
             }
         }
-        enableDragging()
     }
     
-    var lastPanPosition: SCNVector3?
-    var panningNode: SCNNode?
-    var panStartZ: CGFloat?
-    
     func enableDragging() {
-        let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(panGesture(panGesture:)))
-        view.addGestureRecognizer(panRecognizer)
-                                                   }
+        DispatchQueue.main.async {
+            let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(self.handlePinch(_:)))
+            self.view.addGestureRecognizer(pinchGesture)
+            
+            let panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(self.panGesture(panGesture:)))
+            self.view.addGestureRecognizer(panRecognizer)
+        }
+    }
+    
+    func updateGeometry() {
+        for node in self.childNodes {
+               node.removeFromParentNode()
+           }
+        createDome()
+       }
         
     @objc func panGesture(panGesture: UIPanGestureRecognizer) {
-        guard let view = view as? SCNView else { return }
         let location = panGesture.location(in: self.view)
         switch panGesture.state {
-        case .began:
-            guard let hitNodeResult = view.hitTest(location, options: nil).first else { return }
-            panStartZ = CGFloat(view.projectPoint(hitNodeResult.node.worldPosition).z)
-            break
-        case .changed:
-            let worldTouchPosition = view.unprojectPoint(SCNVector3(location.x, location.y, panStartZ!))
-
-            self.position = worldTouchPosition
-            break
-        case .ended:
-            break
-        default:
-            break
+            case .began:
+                lastPanLocation = self.worldPosition
+                panStartZ = CGFloat(view.projectPoint(lastPanLocation!).z)
+                break
+            case .changed:
+                let worldTouchPosition = view.unprojectPoint(SCNVector3(location.x, location.y, panStartZ!))
+                let movementVector = SCNVector3(worldTouchPosition.x - lastPanLocation!.x,
+                                                worldTouchPosition.y - lastPanLocation!.y,
+                                                worldTouchPosition.z - lastPanLocation!.z)
+                self.localTranslate(by: movementVector)
+                self.lastPanLocation = worldTouchPosition
+                break
+            default:
+                break
         }
+    }
+    
+    @objc func handlePinch(_ gesture: UIPinchGestureRecognizer) {
+        switch gesture.state {
+            case .began:
+                initialPinchScale = gesture.scale
+                initialRadius = self.radius
+                break
+                
+            case .changed:
+                let scaleFactor = initialPinchScale * gesture.scale
+                let newRadius = initialRadius * scaleFactor
+                self.radius = newRadius
+                break
+            default:
+                break
+        }
+        updateGeometry()
     }
     
     required init?(coder aDecoder: NSCoder) {
