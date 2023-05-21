@@ -54,7 +54,7 @@ class Dome: SCNNode {
                 let vertices: [SCNVector3] = [vertex1, vertex2, vertex3, vertex4]
                 let vertexSource = SCNGeometrySource(vertices: vertices)
                 
-                if i % 2 == 0 {
+                if i % 2 == 0 || j % 2 != 0 {
                     // Fill the rectangle completely
                     let indices: [UInt16] = [0, 1, 2, 2, 3, 0]
                     let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)

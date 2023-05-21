@@ -12,9 +12,12 @@ import Foundation
 import SCNLine
 
 
-class ViewController: UIViewController, ARSCNViewDelegate {
+class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
 
     @IBOutlet var sceneView: ARSCNView!
+    internal var internalState: State = .placeDome
+
+    
     private var domeAnchor: ARAnchor!
     
     private var displayedDome: Dome!
@@ -22,16 +25,22 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     private var horizontalSegments: Int = 10
     private var verticalSegments: Int = 20
     
+    @IBOutlet weak var nextButton: Button!
     override func viewDidLoad() {
         super.viewDidLoad()
         
         sceneView.delegate = self
+                
+        
         let scene = SCNScene()
         sceneView.scene = scene
         sceneView.showsStatistics = true
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         sceneView.addGestureRecognizer(tapGesture)
+        
+        nextButton.setTitle("Next", for: [])
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -47,9 +56,14 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.session.pause()
     }
     
+    @IBAction func nextButtonTapped(_ sender: Any) {
+        print("next state")
+        switchToNextState()
+    }
     //MARK: Object Placement
     @objc
     func handleTap(_ sender: UITapGestureRecognizer){
+        print(sceneView.session.currentFrame?.camera.transform ?? "t")
         if domeAnchor != nil {
             sceneView.session.remove(anchor: domeAnchor)
         }
@@ -66,7 +80,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         }
     }
 
-        func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
+    func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
         if displayedDome != nil {
             radius = displayedDome.radius
         }
@@ -74,8 +88,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         return displayedDome
     }
     
-    func session(_ session: ARSession, didFailWithError error: Error) {
+    @objc
+    func session(_ session: ARSession, didUpdate frame: ARFrame) {
         // Present an error message to the user
+        print(frame.camera.transform)
         
     }
     

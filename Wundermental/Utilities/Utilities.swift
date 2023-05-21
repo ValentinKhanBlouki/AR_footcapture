@@ -12,5 +12,7 @@ import SceneKit
 extension UIColor {
     static let WYellow = UIColor(named: "WYellow")!
     static let WGrey = UIColor(named: "WGrey")!
+    static let WBlue = UIColor(named: "WBlue")!
+    static let WLightBlue = UIColor(named: "WLightBlue")!
 
 }
