@@ -19,6 +19,7 @@
 		B95B1D0C2A100C7B00B70C3B /* test3Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B95B1D0B2A100C7B00B70C3B /* test3Tests.swift */; };
 		B95B1D162A100C7B00B70C3B /* test3UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B95B1D152A100C7B00B70C3B /* test3UITests.swift */; };
 		B95B1D182A100C7B00B70C3B /* test3UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B95B1D172A100C7B00B70C3B /* test3UITestsLaunchTests.swift */; };
+		B98622652A1F47B4006AD886 /* MessageLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B98622642A1F47B4006AD886 /* MessageLabel.swift */; };
 		B99D1EEA2A1901B3005A631E /* Dome.swift in Sources */ = {isa = PBXBuildFile; fileRef = B99D1EE92A1901B3005A631E /* Dome.swift */; };
 		B99D1EED2A190627005A631E /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = B99D1EEC2A190627005A631E /* Utilities.swift */; };
 /* End PBXBuildFile section */
@@ -55,6 +56,7 @@
 		B95B1D112A100C7B00B70C3B /* WundermentalUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WundermentalUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B95B1D152A100C7B00B70C3B /* test3UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = test3UITests.swift; sourceTree = "<group>"; };
 		B95B1D172A100C7B00B70C3B /* test3UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = test3UITestsLaunchTests.swift; sourceTree = "<group>"; };
+		B98622642A1F47B4006AD886 /* MessageLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageLabel.swift; sourceTree = "<group>"; };
 		B99D1EE92A1901B3005A631E /* Dome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dome.swift; sourceTree = "<group>"; };
 		B99D1EEC2A190627005A631E /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -89,6 +91,7 @@
 			isa = PBXGroup;
 			children = (
 				B921B1242A1A8FB5003C6D37 /* Button.swift */,
+				B98622642A1F47B4006AD886 /* MessageLabel.swift */,
 			);
 			path = Elements;
 			sourceTree = "<group>";
@@ -306,6 +309,7 @@
 				B99D1EEA2A1901B3005A631E /* Dome.swift in Sources */,
 				B921B1272A1AA2FB003C6D37 /* ViewController+ApplicationState.swift in Sources */,
 				B99D1EED2A190627005A631E /* Utilities.swift in Sources */,
+				B98622652A1F47B4006AD886 /* MessageLabel.swift in Sources */,
 				B95B1CF62A100C7800B70C3B /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

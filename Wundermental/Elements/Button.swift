@@ -10,6 +10,9 @@ import UIKit
 @IBDesignable
 class Button: UIButton {
     
+    private let padding: UIEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setup()
@@ -26,12 +29,16 @@ class Button: UIButton {
         clipsToBounds = true
         setTitleColor(.white, for: [])
         titleLabel?.font = UIFont.boldSystemFont(ofSize: 17)
+        contentEdgeInsets = UIEdgeInsets(top: 0.0, left: 10.0, bottom: 0.0, right: 10.0)
+
     }
     
-    override var isEnabled: Bool {
-        didSet {
-            backgroundColor = isEnabled ? .WBlue : .WGrey
-        }
+    func setSecondary() {
+        backgroundColor = .WGrey
+    }
+    
+    func setPrimary() {
+        backgroundColor = .WBlue
     }
     
     var toggledOn: Bool = true {

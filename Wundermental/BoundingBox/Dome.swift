@@ -101,6 +101,16 @@ class Dome: SCNNode {
         }
     }
     
+    func disableDragging() {
+        DispatchQueue.main.async {
+            for gestureRecognizer in self.view.gestureRecognizers ?? [] {
+                if gestureRecognizer is UIPinchGestureRecognizer || gestureRecognizer is UIPanGestureRecognizer {
+                    self.view.removeGestureRecognizer(gestureRecognizer)
+                }
+            }
+        }
+    }
+    
     func updateGeometry() {
         for node in self.childNodes {
                node.removeFromParentNode()
