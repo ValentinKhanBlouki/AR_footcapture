@@ -20,27 +20,28 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
     private var domeAnchor: ARAnchor!
     
-    private var displayedDome: Dome!
+    public var displayedDome: Dome!
     private var radius: CGFloat = 0.3
     private var horizontalSegments: Int = 10
     private var verticalSegments: Int = 20
     
+    @IBOutlet weak var errorLabel: MessageLabel!
+    @IBOutlet weak var backButton: Button!
+    @IBOutlet weak var instructionLabel: MessageLabel!
     @IBOutlet weak var nextButton: Button!
     override func viewDidLoad() {
         super.viewDidLoad()
         
         sceneView.delegate = self
                 
-        
         let scene = SCNScene()
         sceneView.scene = scene
         sceneView.showsStatistics = true
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         sceneView.addGestureRecognizer(tapGesture)
-        
-        nextButton.setTitle("Next", for: [])
-        
+        state = State.placeDome
+        nextButton.setSecondary()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -57,13 +58,23 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     }
     
     @IBAction func nextButtonTapped(_ sender: Any) {
-        print("next state")
         switchToNextState()
     }
+    @IBAction func backButtonTapped(_ sender: Any) {
+        if state == State.finish {
+            state = State.placeDome
+            return
+        }
+            
+        switchToPreviousState()
+    }
+    
     //MARK: Object Placement
     @objc
     func handleTap(_ sender: UITapGestureRecognizer){
-        print(sceneView.session.currentFrame?.camera.transform ?? "t")
+        if state != State.placeDome {
+            return
+        }
         if domeAnchor != nil {
             sceneView.session.remove(anchor: domeAnchor)
         }
@@ -74,9 +85,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         if let firstResult = results.first{
             domeAnchor = ARAnchor(transform: firstResult.worldTransform)
             sceneView.session.add(anchor: domeAnchor)
+            nextButton.setPrimary()
         }
         else{
-            print("Object placement failed - couldn't find a surface")
+            errorLabel.setErrorMessage()
+            errorLabel.showAutoHideMessage(Errors.domePlaceNoSurface)
         }
     }
 

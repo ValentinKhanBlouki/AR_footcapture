@@ -28,14 +28,21 @@ extension ViewController {
             var newState = newValue
             switch newValue {
             case .placeDome:
-                newState = .scanning
+                newState = .placeDome
                 break
                 
             case .scanning:
-                newState = .finish
+                if displayedDome == nil {
+                    errorLabel.isHidden = false
+                    errorLabel.setErrorMessage()
+                    errorLabel.showAutoHideMessage(Errors.domeNotPlace)
+                    return
+                }
+                newState = .scanning
                 break
                 
             case .finish:
+                newState = .finish
                 break
             }
             
@@ -44,39 +51,59 @@ extension ViewController {
             
             switch newState {
             case .placeDome:
+                if displayedDome != nil {
+                    displayedDome.enableDragging()
+                }
                 print("State: Place Dome")
                 //showBackButton(false)
+                instructionLabel.display(Instructions.placeDome)
                 nextButton.isEnabled = true
+                nextButton.setTitle("Next", for: [])
+
+                backButton.setTitle("Back", for: [])
+                backButton.isHidden = true
                 //loadModelButton.isHidden = true
                 //flashlightButton.isHidden = true
-                
-                // Make sure the SCNScene is cleared of any SCNNodes from previous scans.
-                sceneView.scene = SCNScene()
+                break
                 
             case .scanning:
-                print("State: Not ready to scan")
+                displayedDome.disableDragging()
+                print("State: Scan")
                 //loadModelButton.isHidden = true
                 //flashlightButton.isHidden = true
                 //showBackButton(false)
-                nextButton.isEnabled = false
+                instructionLabel.display(Instructions.scanObject)
+
+                nextButton.isEnabled = true
                 nextButton.setTitle("Next", for: [])
+                backButton.setTitle("Back", for: [])
+                backButton.setSecondary()
+                backButton.isHidden = false
                 //displayInstruction(Message("Please wait for stable tracking"))
+                break
                 
             case .finish:
-                print("State: Testing")
+                print("State: Finish")
                 //self.setNavigationBarTitle("Test")
                 //loadModelButton.isHidden = true
                 //flashlightButton.isHidden = false
                 //showMergeScanButton()
+                instructionLabel.display(Instructions.finish)
                 nextButton.isEnabled = true
                 nextButton.setTitle("Share", for: [])
                 
+                backButton.setTitle("Restart Scan", for: [])
+                backButton.setSecondary()
+                backButton.isHidden = false
+                break
             }
             
         }
     }
     
     func switchToPreviousState() {
+        print("switch to preivcous")
+        print(state)
         switch state {
         case .placeDome:
             break
@@ -87,9 +114,11 @@ extension ViewController {
             state = .scanning
             break
         }
+        print(state)
     }
     
     func switchToNextState() {
+        print("switch to next")
         switch state {
         case .placeDome:
             state = .scanning
@@ -100,5 +129,6 @@ extension ViewController {
         case .finish:
             break
         }
+        print(state)
     }
 }
