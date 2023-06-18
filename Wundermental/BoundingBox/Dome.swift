@@ -22,6 +22,7 @@ class Dome: SCNNode {
     private var horizontalSegments : Int
     private var verticalSegments : Int
 
+    private var highlightedNode: Int = 0
     
     init(radius: CGFloat, horizontalSegments: Int, verticalSegments: Int, view: SCNView) {
         self.view = view
@@ -54,41 +55,99 @@ class Dome: SCNNode {
                 let vertices: [SCNVector3] = [vertex1, vertex2, vertex3, vertex4]
                 let vertexSource = SCNGeometrySource(vertices: vertices)
                 
-                if i % 2 == 0 || j % 2 != 0 {
-                    // Fill the rectangle completely
-                    let indices: [UInt16] = [0, 1, 2, 2, 3, 0]
-                    let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
-                    let element = SCNGeometryElement(data: indexData, primitiveType: .triangles, primitiveCount: indices.count / 3, bytesPerIndex: MemoryLayout<UInt16>.size)
-                    let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
-                    
-                    let material = SCNMaterial()
-                    material.diffuse.contents = UIColor.WYellow
-                    material.isDoubleSided = true
-
-                    geometry.materials = [material]
-                    
-                    let rectangleNode = SCNNode(geometry: geometry)
-                    self.addChildNode(rectangleNode)
-                } else {
-                    // Just draw the outline of the rectangle
-                    let indices: [UInt16] = [0, 1, 1, 2, 2, 3, 3, 0]
-                    let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
-                    let element = SCNGeometryElement(data: indexData, primitiveType: .line, primitiveCount: indices.count / 2, bytesPerIndex: MemoryLayout<UInt16>.size)
-                    let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
-                    
-                    let material = SCNMaterial()
-                    material.diffuse.contents = UIColor.WGrey
-                    geometry.materials = [material]
-                    
-                    let rectangleNode = SCNNode(geometry: geometry)
-                    self.addChildNode(rectangleNode)
-                }
+//                if i % 2 == 0 || j % 2 != 0 {
+//                    // Fill the rectangle completely
+//                    let indices: [UInt16] = [0, 1, 2, 2, 3, 0]
+//                    let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
+//                    let element = SCNGeometryElement(data: indexData, primitiveType: .triangles, primitiveCount: indices.count / 3, bytesPerIndex: MemoryLayout<UInt16>.size)
+//                    let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
+//
+//                    let material = SCNMaterial()
+//                    material.diffuse.contents = UIColor.WYellow
+//                    material.isDoubleSided = true
+//
+//                    geometry.materials = [material]
+//
+//                    let rectangleNode = SCNNode(geometry: geometry)
+//                    self.addChildNode(rectangleNode)
+//                } else {
+//                    // Just draw the outline of the rectangle
+//                    let indices: [UInt16] = [0, 1, 1, 2, 2, 3, 3, 0]
+//                    let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
+//                    let element = SCNGeometryElement(data: indexData, primitiveType: .line, primitiveCount: indices.count / 2, bytesPerIndex: MemoryLayout<UInt16>.size)
+//                    let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
+//
+//                    let material = SCNMaterial()
+//                    material.diffuse.contents = UIColor.WGrey
+//                    geometry.materials = [material]
+//
+//                    let rectangleNode = SCNNode(geometry: geometry)
+//                    self.addChildNode(rectangleNode)
+//                }
+                
+                let indices: [UInt16] = [0, 1, 1, 2, 2, 3, 3, 0]
+                let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
+                let element = SCNGeometryElement(data: indexData, primitiveType: .line, primitiveCount: indices.count / 2, bytesPerIndex: MemoryLayout<UInt16>.size)
+                let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
+                
+                let material = SCNMaterial()
+                material.diffuse.contents = UIColor.WGrey
+                geometry.materials = [material]
+                
+                let rectangleNode = SCNNode(geometry: geometry)
+                self.addChildNode(rectangleNode)
+                
                 
                 if (i == 0) {
                     break
                 }
             }
         }
+    }
+    
+    func highlightNode(at index: Int) {
+        guard index >= 0 && index < horizontalSegments else {
+            return
+        }
+        
+        // Reset the previously highlighted node, if any
+//        if let previousNode = self.childNodes[highlightedNode] {
+//            resetHighlight(for: previousNode)
+//        }
+        
+        let node = self.childNodes[index]
+        if let geometry = node.geometry {
+            let material = SCNMaterial()
+            material.diffuse.contents = UIColor.blue
+            geometry.materials = [material]
+            
+            // Highlight edges by adjusting line width
+            if let element = geometry.elements.first {
+                element.pointSize = 10.0  // Adjust the line thickness as needed
+            }
+        }
+        
+        highlightedNode = index
+    }
+
+    func resetHighlight(for node: SCNNode) {
+        if let geometry = node.geometry {
+            let material = SCNMaterial()
+            material.diffuse.contents = UIColor.WGrey
+            geometry.materials = [material]
+            
+            // Reset line width to default value
+            if let element = geometry.elements.first {
+                element.pointSize = 1.0  // Reset to the default line thickness
+            }
+        }
+    }
+
+    
+        
+    func highlightNextNode() {
+        let nextIndex = (highlightedNode + 1) % horizontalSegments
+        highlightNode(at: nextIndex)
     }
     
     func enableDragging() {

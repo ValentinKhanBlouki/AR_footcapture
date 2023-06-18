@@ -16,7 +16,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
 
     @IBOutlet var sceneView: ARSCNView!
     internal var internalState: State = .placeDome
-
+    
     
     private var domeAnchor: ARAnchor!
     
@@ -29,6 +29,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     @IBOutlet weak var backButton: Button!
     @IBOutlet weak var instructionLabel: MessageLabel!
     @IBOutlet weak var nextButton: Button!
+    
+    
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -42,6 +46,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         sceneView.addGestureRecognizer(tapGesture)
         state = State.placeDome
         nextButton.setSecondary()
+//        button = UIButton(type: .system)
+//        button.backgroundColor = UIColor.white
+//        button.tintColor = UIColor.black
+//        button.layer.cornerRadius = 10
+//        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 22.0)
+//        button.setTitle("Highlight", for: .normal)
+//        button.addTarget(self, action: #selector(highlightNextNodeButtonTapped), for: .touchUpInside)
+//        button.translatesAutoresizingMaskIntoConstraints = false
+//        view.addSubview(button)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -57,6 +70,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         sceneView.session.pause()
     }
     
+    @IBAction func hightlightButtonTapped(_ sender: Any) {
+        switchToNextState()
+    }
+    
     @IBAction func nextButtonTapped(_ sender: Any) {
         switchToNextState()
     }
@@ -68,6 +85,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
             
         switchToPreviousState()
     }
+    
+    @objc func highlightNextNodeButtonTapped() {
+            print("hi")
+            displayedDome.highlightNextNode()
+        }
     
     //MARK: Object Placement
     @objc
@@ -81,6 +103,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         
         let location = sender.location(in: sceneView) //get location in arSCNView
         let results = sceneView.hitTest(location, types: .estimatedHorizontalPlane)
+        
         
         if let firstResult = results.first{
             domeAnchor = ARAnchor(transform: firstResult.worldTransform)
