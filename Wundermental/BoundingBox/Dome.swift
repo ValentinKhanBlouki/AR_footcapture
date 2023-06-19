@@ -24,6 +24,14 @@ class Dome: SCNNode {
 
     private var highlightedNode: Int = 0
     
+    
+    enum nodeStatus {
+        case normal
+        case toBeScannedRightNow
+        case alreadyScanned
+    }
+    
+    
     init(radius: CGFloat, horizontalSegments: Int, verticalSegments: Int, view: SCNView) {
         self.view = view
         self.radius = radius
@@ -55,46 +63,7 @@ class Dome: SCNNode {
                 let vertices: [SCNVector3] = [vertex1, vertex2, vertex3, vertex4]
                 let vertexSource = SCNGeometrySource(vertices: vertices)
                 
-//                if i % 2 == 0 || j % 2 != 0 {
-//                    // Fill the rectangle completely
-//                    let indices: [UInt16] = [0, 1, 2, 2, 3, 0]
-//                    let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
-//                    let element = SCNGeometryElement(data: indexData, primitiveType: .triangles, primitiveCount: indices.count / 3, bytesPerIndex: MemoryLayout<UInt16>.size)
-//                    let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
-//
-//                    let material = SCNMaterial()
-//                    material.diffuse.contents = UIColor.WYellow
-//                    material.isDoubleSided = true
-//
-//                    geometry.materials = [material]
-//
-//                    let rectangleNode = SCNNode(geometry: geometry)
-//                    self.addChildNode(rectangleNode)
-//                } else {
-//                    // Just draw the outline of the rectangle
-//                    let indices: [UInt16] = [0, 1, 1, 2, 2, 3, 3, 0]
-//                    let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
-//                    let element = SCNGeometryElement(data: indexData, primitiveType: .line, primitiveCount: indices.count / 2, bytesPerIndex: MemoryLayout<UInt16>.size)
-//                    let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
-//
-//                    let material = SCNMaterial()
-//                    material.diffuse.contents = UIColor.WGrey
-//                    geometry.materials = [material]
-//
-//                    let rectangleNode = SCNNode(geometry: geometry)
-//                    self.addChildNode(rectangleNode)
-//                }
-                
-                let indices: [UInt16] = [0, 1, 1, 2, 2, 3, 3, 0]
-                let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
-                let element = SCNGeometryElement(data: indexData, primitiveType: .line, primitiveCount: indices.count / 2, bytesPerIndex: MemoryLayout<UInt16>.size)
-                let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
-                
-                let material = SCNMaterial()
-                material.diffuse.contents = UIColor.WGrey
-                geometry.materials = [material]
-                
-                let rectangleNode = SCNNode(geometry: geometry)
+                let rectangleNode = buildChildNode(vertexSource: vertexSource, nodeStatus: .normal)
                 self.addChildNode(rectangleNode)
                 
                 
@@ -105,30 +74,85 @@ class Dome: SCNNode {
         }
     }
     
-    func highlightNode(at index: Int) {
-        guard index >= 0 && index < horizontalSegments * verticalSegments else {
-            return
-        }
+    func buildChildNode(vertexSource: SCNGeometrySource, nodeStatus: nodeStatus) -> SCNNode {
         
-        // Reset the previously highlighted node, if any
-//        if let previousNode = self.childNodes[highlightedNode] {
-//            resetHighlight(for: previousNode)
-//        }
-        
-        let node = self.childNodes[index]
-        if let geometry = node.geometry {
+        switch nodeStatus {
+        case .normal:
+            let indices: [UInt16] = [0, 1, 1, 2, 2, 3, 3, 0]
+            let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
+            let element = SCNGeometryElement(data: indexData, primitiveType: .line, primitiveCount: indices.count / 2, bytesPerIndex: MemoryLayout<UInt16>.size)
+            let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
+            
+            let material = SCNMaterial()
+            material.diffuse.contents = UIColor.WGrey
+            geometry.materials = [material]
+            
+            let rectangleNode = SCNNode(geometry: geometry)
+            return rectangleNode
+        case .toBeScannedRightNow:
+            let indices: [UInt16] = [0, 1, 1, 2, 2, 3, 3, 0]
+            let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
+            let element = SCNGeometryElement(data: indexData, primitiveType: .line, primitiveCount: indices.count / 2, bytesPerIndex: MemoryLayout<UInt16>.size)
+            let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
+            
             let material = SCNMaterial()
             material.diffuse.contents = UIColor.blue
             geometry.materials = [material]
             
-            // Highlight edges by adjusting line width
-            if let element = geometry.elements.first {
-                element.pointSize = 30.0  // Adjust the line thickness as needed
-            }
+            let rectangleNode = SCNNode(geometry: geometry)
+            return rectangleNode
+        case .alreadyScanned:
+            let indices: [UInt16] = [0, 1, 2, 2, 3, 0]
+            let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
+            let element = SCNGeometryElement(data: indexData, primitiveType: .triangles, primitiveCount: indices.count / 3, bytesPerIndex: MemoryLayout<UInt16>.size)
+            let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
+            
+            let material = SCNMaterial()
+            material.diffuse.contents = UIColor.green
+            material.isDoubleSided = true
+            
+            geometry.materials = [material]
+            
+            let rectangleNode = SCNNode(geometry: geometry)
+            return rectangleNode
+            
         }
+    }
+    
+    
+    
+    func highlightNode(at index: Int) {
+        guard index >= 0 && index < horizontalSegments * verticalSegments else {
+            return
+        }
+        // Mark the previous node as already scanned.
+        if index > 0 {
+            let vertexSource = getVertexSource(from: self.childNodes[index-1])!
+            let rectangleNode = buildChildNode(vertexSource: vertexSource, nodeStatus: .alreadyScanned)
+            self.addChildNode(rectangleNode)
+        }
+        // Mark the current node as to be scanned
+        let vertexSource = getVertexSource(from: self.childNodes[index])!
+        let rectangleNode = buildChildNode(vertexSource: vertexSource, nodeStatus: .toBeScannedRightNow)
+        self.addChildNode(rectangleNode)
         
         highlightedNode = index
     }
+    
+    
+    
+    
+    func getVertexSource(from rectangleNode: SCNNode) -> SCNGeometrySource? {
+        guard let geometry = rectangleNode.geometry else {
+            return nil
+        }
+        
+        if let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }) {
+            return vertexSource
+        }
+        return nil
+    }
+
 
     func resetHighlight(for node: SCNNode) {
         if let geometry = node.geometry {
