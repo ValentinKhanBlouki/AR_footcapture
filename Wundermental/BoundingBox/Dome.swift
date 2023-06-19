@@ -106,7 +106,7 @@ class Dome: SCNNode {
     }
     
     func highlightNode(at index: Int) {
-        guard index >= 0 && index < horizontalSegments else {
+        guard index >= 0 && index < horizontalSegments * verticalSegments else {
             return
         }
         
@@ -123,7 +123,7 @@ class Dome: SCNNode {
             
             // Highlight edges by adjusting line width
             if let element = geometry.elements.first {
-                element.pointSize = 10.0  // Adjust the line thickness as needed
+                element.pointSize = 30.0  // Adjust the line thickness as needed
             }
         }
         
@@ -146,7 +146,7 @@ class Dome: SCNNode {
     
         
     func highlightNextNode() {
-        let nextIndex = (highlightedNode + 1) % horizontalSegments
+        let nextIndex = highlightedNode + 1
         highlightNode(at: nextIndex)
     }
     
