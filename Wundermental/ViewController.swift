@@ -10,7 +10,7 @@ import SceneKit
 import ARKit
 import Foundation
 import SCNLine
-
+import RealityKit
 
 class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
 
@@ -24,6 +24,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     private var radius: CGFloat = 0.3
     private var horizontalSegments: Int = 10
     private var verticalSegments: Int = 20
+    private var timer: Timer?
     
     @IBOutlet weak var errorLabel: MessageLabel!
     @IBOutlet weak var backButton: Button!
@@ -31,8 +32,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     @IBOutlet weak var nextButton: Button!
     
     @IBOutlet weak var highlightButton: Button!
-    
-    
+    @IBOutlet weak var scanProgressLabel: UILabel!
+    @IBOutlet weak var distanceToCurrentlySelectedNodeLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,21 +48,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         sceneView.addGestureRecognizer(tapGesture)
         state = State.placeDome
         nextButton.setSecondary()
-//        button = UIButton(type: .system)
-//        button.backgroundColor = UIColor.white
-//        button.tintColor = UIColor.black
-//        button.layer.cornerRadius = 10
-//        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 22.0)
-//        button.setTitle("Highlight", for: .normal)
-//        button.addTarget(self, action: #selector(highlightNextNodeButtonTapped), for: .touchUpInside)
-//        button.translatesAutoresizingMaskIntoConstraints = false
-//        view.addSubview(button)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         let configuration = ARWorldTrackingConfiguration()
-        
         sceneView.session.run(configuration)
     }
     
@@ -73,8 +64,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
 
     @IBAction func highlightButtonTapped(_ sender: Any) {
-        print("hi")
         displayedDome.highlightNextNode()
+        scanProgressLabel.text = "\(displayedDome.highlightedNode)/\(horizontalSegments*verticalSegments)"
+        
+        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(calculateDistanceAndAngle), userInfo: nil, repeats: true)
     }
     
     @IBAction func nextButtonTapped(_ sender: Any) {
@@ -89,6 +82,25 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         switchToPreviousState()
     }
     
+    @objc func calculateDistanceAndAngle() {
+        guard let camera = sceneView.session.currentFrame?.camera,
+                  let domeAnchor = domeAnchor else {
+                return
+            }
+            
+        let cameraPosition = simd_make_float3(camera.transform.columns.3)
+        
+        let domeAnchorPosition = simd_make_float3(domeAnchor.transform.columns.3)
+        let relativeNodePosition = simd_float3(displayedDome.calculateCenterPositionOfHighlightedNode())
+        
+        let domeNodePosition = domeAnchorPosition + relativeNodePosition
+//        let domeNodePosition = displayedDome.childNodes[displayedDome.highlightedNode].simdPosition
+        
+        
+        let distance = simd_distance(domeNodePosition, cameraPosition)
+        distanceToCurrentlySelectedNodeLabel.text = String(format: "%.2f", distance)
+        // print("Distance to domeAnchor: \(distance)")
+    }
     
     
     //MARK: Object Placement

@@ -22,7 +22,7 @@ class Dome: SCNNode {
     private var horizontalSegments : Int
     private var verticalSegments : Int
 
-    private var highlightedNode: Int = 0
+    public var highlightedNode: Int = 0
     
     
     enum nodeStatus {
@@ -65,6 +65,7 @@ class Dome: SCNNode {
                 
                 let rectangleNode = buildChildNode(vertexSource: vertexSource, nodeStatus: .normal)
                 self.addChildNode(rectangleNode)
+            
                 
                 
                 if (i == 0) {
@@ -73,6 +74,77 @@ class Dome: SCNNode {
             }
         }
     }
+    
+    
+    func calculateCenterPositionOfHighlightedNode() -> SCNVector3 {
+        let i = 1 + highlightedNode / verticalSegments  //verticalSemgents = 20, i = index in "row"
+        let j = -1 + highlightedNode % verticalSegments // j = index in row
+        // angles
+        let phi1 = CGFloat(i) * .pi / 2 / CGFloat(horizontalSegments - 1)
+        let phi2 = CGFloat(i+1) * .pi / 2 / CGFloat(horizontalSegments - 1)
+        let theta1 = CGFloat(j) * 2 * .pi / CGFloat(verticalSegments - 1)
+        let theta2 = CGFloat(j+1) *  2  * .pi / CGFloat(verticalSegments - 1)
+        // vertices
+        let vertex1 = SCNVector3(radius * sin(phi1) * cos(theta1), radius * cos(phi1), radius * sin(phi1) * sin(theta1))
+        let vertex2 = SCNVector3(radius * sin(phi1) * cos(theta2), radius * cos(phi1), radius * sin(phi1) * sin(theta2))
+        let vertex3 = SCNVector3(radius * sin(phi2) * cos(theta2), radius * cos(phi2), radius * sin(phi2) * sin(theta2))
+        let vertex4 = SCNVector3(radius * sin(phi2) * cos(theta1), radius * cos(phi2), radius * sin(phi2) * sin(theta1))
+        // center point
+        let centerPoint = calculateAverage(vertex1: vertex1, vertex2: vertex2, vertex3: vertex3, vertex4: vertex4)
+        
+        let geometry = SCNSphere(radius: 0.01)
+        let material = SCNMaterial()
+        material.diffuse.contents = UIColor.red
+        geometry.materials = [material]
+
+        // Create a node with the geometry
+        let node = SCNNode(geometry: geometry)
+
+        // Set the position of the node based on the center point
+        node.position = centerPoint
+
+        // Add the node to the scene or another parent node
+        // For example, assuming you have a scene called 'scene':
+        self.addChildNode(node)
+        print("\(centerPoint)")
+        return centerPoint
+    }
+    
+    func calculateAverage(vertex1: SCNVector3, vertex2: SCNVector3, vertex3: SCNVector3, vertex4: SCNVector3) -> SCNVector3 {
+        let vertexCount = 4
+        
+        // Sum up the individual components
+        var sumX: Float = 0.0
+        var sumY: Float = 0.0
+        var sumZ: Float = 0.0
+        
+        sumX += vertex1.x
+        sumY += vertex1.y
+        sumZ += vertex1.z
+        
+        sumX += vertex2.x
+        sumY += vertex2.y
+        sumZ += vertex2.z
+        
+        sumX += vertex3.x
+        sumY += vertex3.y
+        sumZ += vertex3.z
+        
+        sumX += vertex4.x
+        sumY += vertex4.y
+        sumZ += vertex4.z
+        
+        // Calculate the average
+        let averageX = sumX / Float(vertexCount)
+        let averageY = sumY / Float(vertexCount)
+        let averageZ = sumZ / Float(vertexCount)
+        
+        let averageVertex = SCNVector3(averageX, averageY, averageZ)
+        return averageVertex
+    }
+    
+    
+
     
     func buildChildNode(vertexSource: SCNGeometrySource, nodeStatus: nodeStatus) -> SCNNode {
         
@@ -137,6 +209,14 @@ class Dome: SCNNode {
         self.addChildNode(rectangleNode)
         
         highlightedNode = index
+    }
+    
+    func getNodeCoordinates() -> simd_float3 {
+        
+        let highlightedNode = self.childNodes[self.highlightedNode]
+        
+        
+        return highlightedNode.simdEulerAngles
     }
     
     

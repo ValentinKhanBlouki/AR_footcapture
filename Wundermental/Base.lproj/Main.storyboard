@@ -57,8 +57,22 @@
                                     <action selector="nextButtonTapped:" destination="BV1-FR-VrT" eventType="touchUpInside" id="RWR-N7-Wyf"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Scan Progress" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b1o-8I-6wq">
+                                <rect key="frame" x="52" y="698" width="110" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Distance to Node i" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jx4-LF-2cq">
+                                <rect key="frame" x="235" y="698" width="140" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xBp-8H-kUu" customClass="Button" customModule="Wundermental" customModuleProvider="target">
-                                <rect key="frame" x="132" y="681" width="93" height="35"/>
+                                <rect key="frame" x="132" y="621" width="93" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="Highlight"/>
@@ -88,10 +102,12 @@
                     </view>
                     <connections>
                         <outlet property="backButton" destination="Taj-8Q-3Nb" id="jZU-ip-Obk"/>
+                        <outlet property="distanceToCurrentlySelectedNodeLabel" destination="jx4-LF-2cq" id="eEa-mk-uP8"/>
                         <outlet property="errorLabel" destination="PlI-15-mDD" id="Cem-75-JW9"/>
                         <outlet property="highlightButton" destination="xBp-8H-kUu" id="iwT-ZD-dN0"/>
                         <outlet property="instructionLabel" destination="bwt-ZR-XyS" id="jQ3-vt-vfq"/>
                         <outlet property="nextButton" destination="E6f-0B-8YN" id="HFV-Yc-ype"/>
+                        <outlet property="scanProgressLabel" destination="b1o-8I-6wq" id="fIb-YV-Rdf"/>
                         <outlet property="sceneView" destination="BrB-h1-WRS" id="5nT-qQ-ynl"/>
                     </connections>
                 </viewController>
