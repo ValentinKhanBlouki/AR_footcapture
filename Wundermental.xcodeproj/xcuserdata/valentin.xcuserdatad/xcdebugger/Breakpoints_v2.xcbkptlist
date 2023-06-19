@@ -3,4 +3,114 @@
    uuid = "724EB4CD-02E1-4609-A8CE-E907333A3348"
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "75288C58-B6D5-42FE-9907-52F017BF0C3E"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Wundermental/ViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "29"
+            endingLineNumber = "29"
+            landmarkName = "ViewController"
+            landmarkType = "3">
+            <Locations>
+               <Location
+                  uuid = "75288C58-B6D5-42FE-9907-52F017BF0C3E - 4cbffe6202dcc7f4"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Wundermental.ViewController.errorLabel.getter : Swift.Optional&lt;Wundermental.MessageLabel&gt;"
+                  moduleName = "Wundermental"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/valentin/Development/augmented_reality/cvhci_praktikum/guided-hr-3d-scanning/Wundermental/ViewController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "29"
+                  endingLineNumber = "29"
+                  offsetFromSymbolStart = "88">
+               </Location>
+               <Location
+                  uuid = "75288C58-B6D5-42FE-9907-52F017BF0C3E - f8120d4a133e93e8"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Wundermental.ViewController.errorLabel.setter : Swift.Optional&lt;Wundermental.MessageLabel&gt;"
+                  moduleName = "Wundermental"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/valentin/Development/augmented_reality/cvhci_praktikum/guided-hr-3d-scanning/Wundermental/ViewController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "29"
+                  endingLineNumber = "29"
+                  offsetFromSymbolStart = "108">
+               </Location>
+               <Location
+                  uuid = "75288C58-B6D5-42FE-9907-52F017BF0C3E - 64c8cea456942f7"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Wundermental.ViewController.errorLabel.modify : Swift.Optional&lt;Wundermental.MessageLabel&gt;"
+                  moduleName = "Wundermental"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/valentin/Development/augmented_reality/cvhci_praktikum/guided-hr-3d-scanning/Wundermental/ViewController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "29"
+                  endingLineNumber = "29"
+                  offsetFromSymbolStart = "0">
+               </Location>
+               <Location
+                  uuid = "75288C58-B6D5-42FE-9907-52F017BF0C3E - 980285e73a3a7add"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Wundermental.ViewController.errorLabel.modify : Swift.Optional&lt;Wundermental.MessageLabel&gt; with unmangled suffix &quot;.resume.0&quot;"
+                  moduleName = "Wundermental"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/valentin/Development/augmented_reality/cvhci_praktikum/guided-hr-3d-scanning/Wundermental/ViewController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "29"
+                  endingLineNumber = "29"
+                  offsetFromSymbolStart = "28">
+               </Location>
+               <Location
+                  uuid = "75288C58-B6D5-42FE-9907-52F017BF0C3E - fd26b9afe1856ac3"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Wundermental.ViewController.init(nibName: Swift.Optional&lt;Swift.String&gt;, bundle: Swift.Optional&lt;__C.NSBundle&gt;) -&gt; Wundermental.ViewController"
+                  moduleName = "Wundermental"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/valentin/Development/augmented_reality/cvhci_praktikum/guided-hr-3d-scanning/Wundermental/ViewController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "29"
+                  endingLineNumber = "29"
+                  offsetFromSymbolStart = "392">
+               </Location>
+               <Location
+                  uuid = "75288C58-B6D5-42FE-9907-52F017BF0C3E - 63f2285a0a5a8c9"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Wundermental.ViewController.init(coder: __C.NSCoder) -&gt; Swift.Optional&lt;Wundermental.ViewController&gt;"
+                  moduleName = "Wundermental"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/valentin/Development/augmented_reality/cvhci_praktikum/guided-hr-3d-scanning/Wundermental/ViewController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "29"
+                  endingLineNumber = "29"
+                  offsetFromSymbolStart = "368">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>
