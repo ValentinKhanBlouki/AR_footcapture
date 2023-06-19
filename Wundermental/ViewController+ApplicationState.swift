@@ -62,6 +62,7 @@ extension ViewController {
 
                 backButton.setTitle("Back", for: [])
                 backButton.isHidden = true
+                highlightButton.isHidden = true
                 //loadModelButton.isHidden = true
                 //flashlightButton.isHidden = true
                 break
@@ -79,6 +80,7 @@ extension ViewController {
                 backButton.setTitle("Back", for: [])
                 backButton.setSecondary()
                 backButton.isHidden = false
+                highlightButton.isHidden = false
                 //displayInstruction(Message("Please wait for stable tracking"))
                 break
                 

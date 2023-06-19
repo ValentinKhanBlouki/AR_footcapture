@@ -30,6 +30,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     @IBOutlet weak var instructionLabel: MessageLabel!
     @IBOutlet weak var nextButton: Button!
     
+    @IBOutlet weak var highlightButton: Button!
     
     
     
@@ -70,8 +71,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         sceneView.session.pause()
     }
     
-    @IBAction func hightlightButtonTapped(_ sender: Any) {
-        switchToNextState()
+
+    @IBAction func highlightButtonTapped(_ sender: Any) {
+        print("hi")
+        displayedDome.highlightNextNode()
     }
     
     @IBAction func nextButtonTapped(_ sender: Any) {
@@ -86,10 +89,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         switchToPreviousState()
     }
     
-    @objc func highlightNextNodeButtonTapped() {
-            print("hi")
-            displayedDome.highlightNextNode()
-        }
+    
     
     //MARK: Object Placement
     @objc
