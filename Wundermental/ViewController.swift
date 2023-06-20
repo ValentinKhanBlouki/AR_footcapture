@@ -62,15 +62,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         sceneView.session.pause()
     }
     
-
-    @IBAction func highlightButtonTapped(_ sender: Any) {
-        displayedDome.highlightNextNode()
-        scanProgressLabel.text = "\(displayedDome.highlightedNode)/\(horizontalSegments*verticalSegments)"
-        
-        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(calculateDistanceAndAngle), userInfo: nil, repeats: true)
-    }
     
     @IBAction func nextButtonTapped(_ sender: Any) {
+        if state == State.placeDome {
+            timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(calculateDistanceAndAngle), userInfo: nil, repeats: true)
+        }
         switchToNextState()
     }
     @IBAction func backButtonTapped(_ sender: Any) {
@@ -82,24 +78,40 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         switchToPreviousState()
     }
     
+    
+    
+    
     @objc func calculateDistanceAndAngle() {
         guard let camera = sceneView.session.currentFrame?.camera,
                   let domeAnchor = domeAnchor else {
                 return
             }
-            
         let cameraPosition = simd_make_float3(camera.transform.columns.3)
-        
         let domeAnchorPosition = simd_make_float3(domeAnchor.transform.columns.3)
-        let relativeNodePosition = simd_float3(displayedDome.calculateCenterPositionOfHighlightedNode())
         
-        let domeNodePosition = domeAnchorPosition + relativeNodePosition
-//        let domeNodePosition = displayedDome.childNodes[displayedDome.highlightedNode].simdPosition
-        
-        
+        let relativeNodePosition = displayedDome.calculateCenterPositionOfHighlightedNode()
+        let domeNodePosition = domeAnchorPosition + simd_float3(relativeNodePosition)
         let distance = simd_distance(domeNodePosition, cameraPosition)
-        distanceToCurrentlySelectedNodeLabel.text = String(format: "%.2f", distance)
-        // print("Distance to domeAnchor: \(distance)")
+        let distanceText = String(format: "%.2f", distance)
+        
+        relativeNodePosition
+        
+        if (distance < 0.03) {
+            distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.green
+            distanceToCurrentlySelectedNodeLabel.text = "\(distanceText) 📸 ✅"
+            displayedDome.highlightNextNode()
+            scanProgressLabel.text = "\(displayedDome.highlightedNode)/\(horizontalSegments*verticalSegments)"
+
+        } else {
+            distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.white
+            distanceToCurrentlySelectedNodeLabel.text = "\(distanceText)"
+        }
+    }
+    
+    @objc func takePicture() {
+        let systemSoundID: SystemSoundID = 1108 // Camera shutter sound ID
+        AudioServicesPlaySystemSound(systemSoundID)
+        // INSERT PICTURE TAKING CODE HERE
     }
     
     
