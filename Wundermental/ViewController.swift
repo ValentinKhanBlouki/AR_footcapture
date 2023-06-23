@@ -16,6 +16,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
 
     @IBOutlet var sceneView: ARSCNView!
     internal var internalState: State = .placeDome
+    var depthUIImage: UIImage!
+    var depthCGImage: CGImage!
+
     
     
     private var domeAnchor: ARAnchor!
@@ -38,7 +41,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        sceneView.delegate = self
+        sceneView.delegate = self //sceneView.session.delegate = self geht mit dome nicht
                 
         let scene = SCNScene()
         sceneView.scene = scene
@@ -52,10 +55,16 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        let configuration = ARWorldTrackingConfiguration()
-        sceneView.session.run(configuration)
-    }
-    
+               if ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) {
+                   let configuration = ARWorldTrackingConfiguration()
+                   configuration.frameSemantics = .sceneDepth
+                   sceneView.session.run(configuration)
+               } else {
+                   print("No lidar available")
+               }
+
+           }
+
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -99,6 +108,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         if (distance < 0.03) {
             distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.green
             distanceToCurrentlySelectedNodeLabel.text = "\(distanceText) 📸 ✅"
+            takePicture()
             displayedDome.highlightNextNode()
             scanProgressLabel.text = "\(displayedDome.highlightedNode)/\(horizontalSegments*verticalSegments)"
 
@@ -109,9 +119,20 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     }
     
     @objc func takePicture() {
+        print("take photo")
         let systemSoundID: SystemSoundID = 1108 // Camera shutter sound ID
         AudioServicesPlaySystemSound(systemSoundID)
-        // INSERT PICTURE TAKING CODE HERE
+        displayedDome.isHidden = true
+        let snapshot = sceneView.snapshot()
+        displayedDome.isHidden = false
+        //saves depth and normal image as jpeg, but to create the model the heic file is needed
+        ImageSaver().writeToPhotoAlbum(image: snapshot)
+//        let depthImage = UIImage(cgImage: depthCGImage)
+//        ImageSaver().writeToPhotoAlbum(image: depthImage)
+        
+        //saves image as heic, but depth information is not properly embedded
+        SaveToPhotoLibrary().saveImageAsHEICToPhotoGallery(snapshot)
+
     }
     
     
@@ -150,8 +171,19 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
     @objc
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
+        //dome geht nicht
         // Present an error message to the user
-        print(frame.camera.transform)
+//        guard let depthMap = frame.sceneDepth?.depthMap else { return }
+//
+//       let depthImage = CIImage(cvPixelBuffer: depthMap)
+//       let context = CIContext(options: nil)
+//
+//       if let cgImage = context.createCGImage(depthImage, from: depthImage.extent) {
+//           depthUIImage = UIImage(cgImage: cgImage)
+//           depthCGImage = cgImage*/
+//
+//       }
+
         
     }
     

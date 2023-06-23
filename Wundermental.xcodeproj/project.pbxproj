@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A70D28652A41D810008F7678 /* SaveToPhotoLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70D28642A41D810008F7678 /* SaveToPhotoLibrary.swift */; };
 		B921B1252A1A8FB5003C6D37 /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = B921B1242A1A8FB5003C6D37 /* Button.swift */; };
 		B921B1272A1AA2FB003C6D37 /* ViewController+ApplicationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B921B1262A1AA2FB003C6D37 /* ViewController+ApplicationState.swift */; };
 		B952F4CD2A10EACC001EF4F3 /* SCNLine in Frameworks */ = {isa = PBXBuildFile; productRef = B952F4CC2A10EACC001EF4F3 /* SCNLine */; };
@@ -42,6 +43,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A70D28642A41D810008F7678 /* SaveToPhotoLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveToPhotoLibrary.swift; sourceTree = "<group>"; };
 		B921B1242A1A8FB5003C6D37 /* Button.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Button.swift; sourceTree = "<group>"; };
 		B921B1262A1AA2FB003C6D37 /* ViewController+ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+ApplicationState.swift"; sourceTree = "<group>"; };
 		B95B1CF22A100C7800B70C3B /* Wundermental.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wundermental.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -126,6 +128,7 @@
 				B95B1CF72A100C7800B70C3B /* art.scnassets */,
 				B95B1CF92A100C7800B70C3B /* ViewController.swift */,
 				B921B1262A1AA2FB003C6D37 /* ViewController+ApplicationState.swift */,
+				A70D28642A41D810008F7678 /* SaveToPhotoLibrary.swift */,
 				B95B1CFB2A100C7800B70C3B /* Main.storyboard */,
 				B95B1CFE2A100C7B00B70C3B /* Assets.xcassets */,
 				B95B1D002A100C7B00B70C3B /* LaunchScreen.storyboard */,
@@ -308,6 +311,7 @@
 				B95B1CFA2A100C7800B70C3B /* ViewController.swift in Sources */,
 				B99D1EEA2A1901B3005A631E /* Dome.swift in Sources */,
 				B921B1272A1AA2FB003C6D37 /* ViewController+ApplicationState.swift in Sources */,
+				A70D28652A41D810008F7678 /* SaveToPhotoLibrary.swift in Sources */,
 				B99D1EED2A190627005A631E /* Utilities.swift in Sources */,
 				B98622652A1F47B4006AD886 /* MessageLabel.swift in Sources */,
 				B95B1CF62A100C7800B70C3B /* AppDelegate.swift in Sources */,
@@ -490,6 +494,7 @@
 				DEVELOPMENT_TEAM = 4VR8L2838U;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app will write images in your photo gallery.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -521,6 +526,7 @@
 				DEVELOPMENT_TEAM = 4VR8L2838U;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app will write images in your photo gallery.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
