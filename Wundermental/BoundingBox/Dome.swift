@@ -106,7 +106,7 @@ class Dome: SCNNode {
         // Add the node to the scene or another parent node
         // For example, assuming you have a scene called 'scene':
         self.addChildNode(node)
-        print("\(centerPoint)")
+//        print("\(centerPoint)")
         return centerPoint
     }
     
