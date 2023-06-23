@@ -74,10 +74,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
     @IBAction func nextButtonTapped(_ sender: Any) {
         if state == State.placeDome {
-            timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(calculateDistanceAndAngle), userInfo: nil, repeats: true)
+           timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(calculateDistanceAndAngle), userInfo: nil, repeats: true)
         }
         switchToNextState()
     }
+
     @IBAction func backButtonTapped(_ sender: Any) {
         if state == State.finish {
             state = State.placeDome
@@ -103,7 +104,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         let distance = simd_distance(domeNodePosition, cameraPosition)
         let distanceText = String(format: "%.2f", distance)
         
-        relativeNodePosition
         
         if (distance < 0.03) {
             distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.green
@@ -119,20 +119,38 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     }
     
     @objc func takePicture() {
-        print("take photo")
-        let systemSoundID: SystemSoundID = 1108 // Camera shutter sound ID
-        AudioServicesPlaySystemSound(systemSoundID)
+        // GET IMAGES
         displayedDome.isHidden = true
         let snapshot = sceneView.snapshot()
+        let depthImage = getDepthImage()
+        // SIGNAL COMPLETION TO USER
+        let systemSoundID: SystemSoundID = 1108 // Camera shutter sound ID
+        AudioServicesPlaySystemSound(systemSoundID)
         displayedDome.isHidden = false
-        //saves depth and normal image as jpeg, but to create the model the heic file is needed
+        // SAVE
+        ImageSaver().writeToPhotoAlbum(image: depthImage)
         ImageSaver().writeToPhotoAlbum(image: snapshot)
-//        let depthImage = UIImage(cgImage: depthCGImage)
-//        ImageSaver().writeToPhotoAlbum(image: depthImage)
-        
-        //saves image as heic, but depth information is not properly embedded
         SaveToPhotoLibrary().saveImageAsHEICToPhotoGallery(snapshot)
+        
+    }
 
+    @objc func takeSnapshot() {
+        
+        
+    }
+
+
+    @objc func getDepthImage() -> UIImage {
+        let depthMap = sceneView.session.currentFrame?.sceneDepth?.depthMap
+        let depthImage = CIImage(cvPixelBuffer: depthMap!)
+        let context = CIContext(options: nil)
+        if let cgImage = context.createCGImage(depthImage, from: depthImage.extent) {
+            depthUIImage = UIImage(cgImage: cgImage)
+            depthCGImage = cgImage
+
+        }
+        return UIImage(cgImage: depthCGImage)
+        
     }
     
     
@@ -173,16 +191,16 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         //dome geht nicht
         // Present an error message to the user
-//        guard let depthMap = frame.sceneDepth?.depthMap else { return }
-//
-//       let depthImage = CIImage(cvPixelBuffer: depthMap)
-//       let context = CIContext(options: nil)
-//
-//       if let cgImage = context.createCGImage(depthImage, from: depthImage.extent) {
-//           depthUIImage = UIImage(cgImage: cgImage)
-//           depthCGImage = cgImage*/
-//
-//       }
+    //    guard let depthMap = frame.sceneDepth?.depthMap else { return }
+
+    //    let depthImage = CIImage(cvPixelBuffer: depthMap)
+    //    let context = CIContext(options: nil)
+
+    //    if let cgImage = context.createCGImage(depthImage, from: depthImage.extent) {
+    //        depthUIImage = UIImage(cgImage: cgImage)
+    //        depthCGImage = cgImage
+
+    //    }
 
         
     }
