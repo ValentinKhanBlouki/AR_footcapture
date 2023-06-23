@@ -16,9 +16,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
 
     @IBOutlet var sceneView: ARSCNView!
     internal var internalState: State = .placeDome
-    var depthUIImage: UIImage!
-    var depthCGImage: CGImage!
-
     
     
     private var domeAnchor: ARAnchor!
@@ -128,29 +125,26 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         AudioServicesPlaySystemSound(systemSoundID)
         displayedDome.isHidden = false
         // SAVE
-        ImageSaver().writeToPhotoAlbum(image: depthImage)
-        ImageSaver().writeToPhotoAlbum(image: snapshot)
+        if let tiff = Tiff().convertToTIFF(depthImage){
+                    Tiff().saveTIFFToPhotoLibrary(tiff) //CIImage!
+                }
+
         SaveToPhotoLibrary().saveImageAsHEICToPhotoGallery(snapshot)
         
     }
 
-    @objc func takeSnapshot() {
-        
-        
-    }
 
 
-    @objc func getDepthImage() -> UIImage {
+    @objc func getDepthImage() -> CIImage {
         let depthMap = sceneView.session.currentFrame?.sceneDepth?.depthMap
         let depthImage = CIImage(cvPixelBuffer: depthMap!)
-        let context = CIContext(options: nil)
-        if let cgImage = context.createCGImage(depthImage, from: depthImage.extent) {
-            depthUIImage = UIImage(cgImage: cgImage)
-            depthCGImage = cgImage
-
-        }
-        return UIImage(cgImage: depthCGImage)
-        
+//        let context = CIContext(options: nil)
+//        if let cgImage = context.createCGImage(depthImage, from: depthImage.extent) {
+//            depthUIImage = UIImage(cgImage: cgImage)
+//            depthCGImage = cgImage
+//
+//        }
+        return depthImage
     }
     
     
