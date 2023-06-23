@@ -31,6 +31,46 @@ class SaveToPhotoLibrary{
 }
 
 
+
+class Tiff{
+    lazy var context = CIContext()
+    
+    func saveTIFFToPhotoLibrary(_ tiffData: Data) {
+        PHPhotoLibrary.shared().performChanges({
+            let request = PHAssetCreationRequest.forAsset()
+            request.addResource(with: .photo, data: tiffData, options: nil)
+        }) { success, error in
+            if success {
+                print("TIFF image saved to photo library successfully.")
+            } else {
+                print("Error saving TIFF image to photo library: \(error?.localizedDescription ?? "")")
+            }
+        }
+    }
+    
+    
+    
+    
+    func convertToTIFF(_ depthImage: CIImage) -> Data?{
+        let colorSpace = CGColorSpace(name: CGColorSpace.linearGray)!
+        
+        if let depthMapData = context.tiffRepresentation(of: depthImage,
+                                                         format: .Lf,
+                                                         colorSpace: colorSpace,
+                                                         options: [.disparityImage: depthImage]){
+            return depthMapData
+            
+        } else {
+            print("colorSpace .linearGray not available... can't save depth data!")
+            return nil
+        }
+    }
+}
+    
+
+
+
+
 class ImageSaver: NSObject {
     func writeToPhotoAlbum(image: UIImage) {
         UIImageWriteToSavedPhotosAlbum(image, self, #selector(saveCompleted), nil)
