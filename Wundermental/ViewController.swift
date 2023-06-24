@@ -21,6 +21,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     private var domeAnchor: ARAnchor!
     
     public var displayedDome: Dome!
+    public var lidarAvailable : Bool = false // default
     private var radius: CGFloat = 0.3
     private var horizontalSegments: Int = 10
     private var verticalSegments: Int = 20
@@ -37,9 +38,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        sceneView.delegate = self //sceneView.session.delegate = self geht mit dome nicht
-                
+       
+        sceneView.delegate = self
         let scene = SCNScene()
         sceneView.scene = scene
         sceneView.showsStatistics = true
@@ -52,15 +52,20 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-               if ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) {
-                   let configuration = ARWorldTrackingConfiguration()
-                   configuration.frameSemantics = .sceneDepth
-                   sceneView.session.run(configuration)
-               } else {
-                   print("No lidar available")
-               }
-
-           }
+        let configuration = ARWorldTrackingConfiguration()
+        lidarAvailable = ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth)
+        if lidarAvailable {
+            configuration.frameSemantics = .sceneDepth
+        }
+        sceneView.session.run(configuration)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if !lidarAvailable {
+                displayLiDARAlert()
+        }
+    }
 
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -116,21 +121,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     }
     
     @objc func takePicture() {
+        
         // GET IMAGES
         displayedDome.isHidden = true
         let snapshot = sceneView.snapshot()
-        let depthImage = getDepthImage()
+        if lidarAvailable {
+            let depthImage = getDepthImage()
+            if let tiff = Tiff().convertToTIFF(depthImage){
+                        Tiff().saveTIFFToPhotoLibrary(tiff) //CIImage!
+                    }
+        }
+        SaveToPhotoLibrary().saveImageAsHEICToPhotoGallery(snapshot)
         // SIGNAL COMPLETION TO USER
         let systemSoundID: SystemSoundID = 1108 // Camera shutter sound ID
         AudioServicesPlaySystemSound(systemSoundID)
         displayedDome.isHidden = false
-        // SAVE
-        if let tiff = Tiff().convertToTIFF(depthImage){
-                    Tiff().saveTIFFToPhotoLibrary(tiff) //CIImage!
-                }
-
-        SaveToPhotoLibrary().saveImageAsHEICToPhotoGallery(snapshot)
-        
     }
 
 
@@ -146,6 +151,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
 //        }
         return depthImage
     }
+    
+    @objc func displayLiDARAlert() {
+            let alertController = UIAlertController(title: "No LiDAR Sensor", message: "Your phone does not have the LiDAR sensor necessary to acquire depth data. Therefore only normal images will be saved.", preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "OK", style: .default) { (_) in
+                // Continue with normal image saving or perform other actions
+            }
+            alertController.addAction(okAction)
+            present(alertController, animated: true, completion: nil)
+        }
     
     
     //MARK: Object Placement
