@@ -7,9 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A70D28652A41D810008F7678 /* SaveToPhotoLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70D28642A41D810008F7678 /* SaveToPhotoLibrary.swift */; };
 		B921B1252A1A8FB5003C6D37 /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = B921B1242A1A8FB5003C6D37 /* Button.swift */; };
 		B921B1272A1AA2FB003C6D37 /* ViewController+ApplicationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B921B1262A1AA2FB003C6D37 /* ViewController+ApplicationState.swift */; };
 		B952F4CD2A10EACC001EF4F3 /* SCNLine in Frameworks */ = {isa = PBXBuildFile; productRef = B952F4CC2A10EACC001EF4F3 /* SCNLine */; };
+		B957B2BD2A4C6F2900779E5D /* DomeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = B957B2BC2A4C6F2900779E5D /* DomeTile.swift */; };
 		B95B1CF62A100C7800B70C3B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B95B1CF52A100C7800B70C3B /* AppDelegate.swift */; };
 		B95B1CF82A100C7800B70C3B /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = B95B1CF72A100C7800B70C3B /* art.scnassets */; };
 		B95B1CFA2A100C7800B70C3B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B95B1CF92A100C7800B70C3B /* ViewController.swift */; };
@@ -42,8 +44,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A70D28642A41D810008F7678 /* SaveToPhotoLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveToPhotoLibrary.swift; sourceTree = "<group>"; };
 		B921B1242A1A8FB5003C6D37 /* Button.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Button.swift; sourceTree = "<group>"; };
 		B921B1262A1AA2FB003C6D37 /* ViewController+ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+ApplicationState.swift"; sourceTree = "<group>"; };
+		B957B2BC2A4C6F2900779E5D /* DomeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomeTile.swift; sourceTree = "<group>"; };
 		B95B1CF22A100C7800B70C3B /* Wundermental.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wundermental.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B95B1CF52A100C7800B70C3B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B95B1CF72A100C7800B70C3B /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = art.scnassets; sourceTree = "<group>"; };
@@ -126,6 +130,7 @@
 				B95B1CF72A100C7800B70C3B /* art.scnassets */,
 				B95B1CF92A100C7800B70C3B /* ViewController.swift */,
 				B921B1262A1AA2FB003C6D37 /* ViewController+ApplicationState.swift */,
+				A70D28642A41D810008F7678 /* SaveToPhotoLibrary.swift */,
 				B95B1CFB2A100C7800B70C3B /* Main.storyboard */,
 				B95B1CFE2A100C7B00B70C3B /* Assets.xcassets */,
 				B95B1D002A100C7B00B70C3B /* LaunchScreen.storyboard */,
@@ -154,6 +159,7 @@
 			isa = PBXGroup;
 			children = (
 				B99D1EE92A1901B3005A631E /* Dome.swift */,
+				B957B2BC2A4C6F2900779E5D /* DomeTile.swift */,
 			);
 			path = BoundingBox;
 			sourceTree = "<group>";
@@ -305,9 +311,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				B921B1252A1A8FB5003C6D37 /* Button.swift in Sources */,
+				B957B2BD2A4C6F2900779E5D /* DomeTile.swift in Sources */,
 				B95B1CFA2A100C7800B70C3B /* ViewController.swift in Sources */,
 				B99D1EEA2A1901B3005A631E /* Dome.swift in Sources */,
 				B921B1272A1AA2FB003C6D37 /* ViewController+ApplicationState.swift in Sources */,
+				A70D28652A41D810008F7678 /* SaveToPhotoLibrary.swift in Sources */,
 				B99D1EED2A190627005A631E /* Utilities.swift in Sources */,
 				B98622652A1F47B4006AD886 /* MessageLabel.swift in Sources */,
 				B95B1CF62A100C7800B70C3B /* AppDelegate.swift in Sources */,
@@ -490,6 +498,7 @@
 				DEVELOPMENT_TEAM = M5Q9H7KAHJ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app will write images in your photo gallery.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -497,12 +506,13 @@
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = nici.test3;
+				PRODUCT_BUNDLE_IDENTIFIER = valentin.dome;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -520,6 +530,7 @@
 				DEVELOPMENT_TEAM = M5Q9H7KAHJ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app will write images in your photo gallery.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -527,12 +538,13 @@
 				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = nici.test3;
+				PRODUCT_BUNDLE_IDENTIFIER = valentin.dome;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

@@ -10,30 +10,36 @@ import SceneKit
 import ARKit
 import Foundation
 import SCNLine
-
+import RealityKit
 
 class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
 
     @IBOutlet var sceneView: ARSCNView!
     internal var internalState: State = .placeDome
-
+    
     
     private var domeAnchor: ARAnchor!
     
     public var displayedDome: Dome!
+    public var lidarAvailable : Bool = false // default
     private var radius: CGFloat = 0.3
-    private var horizontalSegments: Int = 10
-    private var verticalSegments: Int = 20
+    private var horizontalSegments: Int = 6
+    private var verticalSegments: Int = 12
+    private var timer: Timer?
     
     @IBOutlet weak var errorLabel: MessageLabel!
     @IBOutlet weak var backButton: Button!
     @IBOutlet weak var instructionLabel: MessageLabel!
     @IBOutlet weak var nextButton: Button!
+    
+    @IBOutlet weak var highlightButton: Button!
+    @IBOutlet weak var scanProgressLabel: UILabel!
+    @IBOutlet weak var distanceToCurrentlySelectedNodeLabel: UILabel!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+       
         sceneView.delegate = self
-                
         let scene = SCNScene()
         sceneView.scene = scene
         sceneView.showsStatistics = true
@@ -47,19 +53,34 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         let configuration = ARWorldTrackingConfiguration()
-        
+        lidarAvailable = ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth)
+        if lidarAvailable {
+            configuration.frameSemantics = .sceneDepth
+        }
         sceneView.session.run(configuration)
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if !lidarAvailable {
+                displayLiDARAlert()
+        }
+    }
+
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         sceneView.session.pause()
     }
     
+    
     @IBAction func nextButtonTapped(_ sender: Any) {
+        if state == State.placeDome {
+           timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(calculateDistanceAndAngle), userInfo: nil, repeats: true)
+        }
         switchToNextState()
     }
+
     @IBAction func backButtonTapped(_ sender: Any) {
         if state == State.finish {
             state = State.placeDome
@@ -68,6 +89,85 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
             
         switchToPreviousState()
     }
+    
+    
+    @objc func calculateDistanceAndAngle() {
+        guard let camera = sceneView.session.currentFrame?.camera else {
+            return
+        }
+        
+        var cameraPosition = simd_make_float3(camera.transform.columns.3)
+        cameraPosition = simd_make_float3(cameraPosition.x, cameraPosition.y, cameraPosition.z)
+        guard let cameraEulerAngle = sceneView.session.currentFrame?.camera.eulerAngles else { return }
+        
+        print(simd_float3(displayedDome.worldPosition))
+        
+        displayedDome.highlightClosest(cameraPos: cameraPosition, domeAnchor: simd_float3(displayedDome.worldPosition))
+               
+        var distance = Float(10.0)
+        var rotationIsCorrect = false
+        if let domeTile = displayedDome.highlightedNode {
+            distance = simd_distance(simd_float3(displayedDome.worldPosition) + simd_float3(domeTile.centerPoint), cameraPosition)
+            let calculatedEuler = domeTile.calculatedEulerAngels
+            
+            rotationIsCorrect = (abs(abs(calculatedEuler.x) - abs(cameraEulerAngle.x)) < 0.5
+                && abs(abs(calculatedEuler.y) - abs(cameraEulerAngle.y)) < 0.5)
+        }
+      
+        if(distance > Float(radius) && distance < (Float(radius) + 10)) {
+            distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WGreen
+            distanceToCurrentlySelectedNodeLabel.text = "Perfect"
+        } else if(distance < Float(radius)) {
+            distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WLightRed
+            distanceToCurrentlySelectedNodeLabel.text = "Move further away"
+        } else {
+            distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WLightRed
+            distanceToCurrentlySelectedNodeLabel.text = "Move closer"
+        }
+        if(distance > Float(radius) && distance < Float(radius) + 10
+            && rotationIsCorrect) {
+            distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WGreen
+            distanceToCurrentlySelectedNodeLabel.text = "Picture taken 📸 ✅"
+            displayedDome.setHighlightedTileAsScanned()
+            takePicture()
+        }
+    }
+    
+    @objc func takePicture() {
+        
+        // GET IMAGES
+        displayedDome.isHidden = true
+        let snapshot = sceneView.snapshot()
+        if lidarAvailable {
+            let depthImage = getDepthImage()
+            if let tiff = Tiff().convertToTIFF(depthImage){
+                        Tiff().saveTIFFToPhotoLibrary(tiff) //CIImage!
+                    }
+        }
+        SaveToPhotoLibrary().saveImageAsHEICToPhotoGallery(snapshot)
+        // SIGNAL COMPLETION TO USER
+        let systemSoundID: SystemSoundID = 1108 // Camera shutter sound ID
+        AudioServicesPlaySystemSound(systemSoundID)
+        displayedDome.isHidden = false
+    }
+
+
+
+    @objc func getDepthImage() -> CIImage {
+        let depthMap = sceneView.session.currentFrame?.sceneDepth?.depthMap
+        let depthImage = CIImage(cvPixelBuffer: depthMap!)
+        return depthImage
+    }
+    
+    @objc func displayLiDARAlert() {
+            let alertController = UIAlertController(title: "No LiDAR Sensor", message: "Your phone does not have the LiDAR sensor necessary to acquire depth data. Therefore only normal images will be saved.", preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "OK", style: .default) { (_) in
+                // Continue with normal image saving or perform other actions
+            }
+            alertController.addAction(okAction)
+            present(alertController, animated: true, completion: nil)
+        }
+    
     
     //MARK: Object Placement
     @objc
@@ -82,8 +182,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         let location = sender.location(in: sceneView) //get location in arSCNView
         let results = sceneView.hitTest(location, types: .estimatedHorizontalPlane)
         
+        
         if let firstResult = results.first{
             domeAnchor = ARAnchor(transform: firstResult.worldTransform)
+            print(simd_make_float3(domeAnchor.transform.columns.3))
             sceneView.session.add(anchor: domeAnchor)
             nextButton.setPrimary()
         }
@@ -103,9 +205,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
     @objc
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
-        // Present an error message to the user
-        print(frame.camera.transform)
-        
+
     }
     
     func sessionWasInterrupted(_ session: ARSession) {
