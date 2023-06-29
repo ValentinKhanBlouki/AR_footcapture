@@ -62,7 +62,6 @@ extension ViewController {
 
                 backButton.setTitle("Back", for: [])
                 backButton.isHidden = true
-                scanProgressLabel.isHidden = true
                 distanceToCurrentlySelectedNodeLabel.isHidden = true
                 //loadModelButton.isHidden = true
                 //flashlightButton.isHidden = true
@@ -81,8 +80,6 @@ extension ViewController {
                 backButton.setTitle("Back", for: [])
                 backButton.setSecondary()
                 backButton.isHidden = false
-                scanProgressLabel.isHidden = false
-                scanProgressLabel.text = "0 Bilder"
                 distanceToCurrentlySelectedNodeLabel.isHidden = false
                 //displayInstruction(Message("Please wait for stable tracking"))
                 break

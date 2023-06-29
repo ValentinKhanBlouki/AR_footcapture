@@ -13,6 +13,8 @@ extension UIColor {
     static let WYellow = UIColor(named: "WYellow")!
     static let WGrey = UIColor(named: "WGrey")!
     static let WBlue = UIColor(named: "WBlue")!
+    static let WGreen = UIColor(named: "WGreen")!
+    static let WGreenDark = UIColor(named: "WGreenDark")!
     static let WLightBlue = UIColor(named: "WLightBlue")!
     static let WLightRed = UIColor(named: "WLightRed")!
 }

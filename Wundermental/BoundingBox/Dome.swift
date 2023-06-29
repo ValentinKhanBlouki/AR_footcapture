@@ -7,6 +7,8 @@
 
 import Foundation
 import SceneKit
+import simd
+
 
 class Dome: SCNNode {
     
@@ -22,7 +24,7 @@ class Dome: SCNNode {
     private var horizontalSegments : Int
     private var verticalSegments : Int
 
-    public var highlightedNode: Int = 0
+    public var highlightedNode: DomeTile?
     
     
     enum nodeStatus {
@@ -46,9 +48,13 @@ class Dome: SCNNode {
     }
     
     func createDome() {
+        highlightedNode = nil
         for i in 0..<horizontalSegments {
             let phi1 = CGFloat(i) * .pi / 2 / CGFloat(horizontalSegments - 1)
             let phi2 = CGFloat(i+1) * .pi / 2 / CGFloat(horizontalSegments - 1)
+            if (i == 0) {
+                continue
+            }
             
             for j in 0..<verticalSegments {
                 let theta1 = CGFloat(j) * 2 * .pi / CGFloat(verticalSegments - 1)
@@ -60,198 +66,64 @@ class Dome: SCNNode {
                 let vertex3 = SCNVector3(radius * sin(phi2) * cos(theta2), radius * cos(phi2), radius * sin(phi2) * sin(theta2))
                 let vertex4 = SCNVector3(radius * sin(phi2) * cos(theta1), radius * cos(phi2), radius * sin(phi2) * sin(theta1))
                 
+                let centerPoint = calculateAverage(vertex1: vertex1, vertex2: vertex2, vertex3: vertex3, vertex4: vertex4)
+                
+               
+                let vector1 = SIMD3<Float>((vertex2.x - vertex1.x), (vertex2.y - vertex1.y), (vertex2.z - vertex1.z))
+                let vector2 = SIMD3<Float>((vertex3.x - vertex2.x), (vertex3.y - vertex2.y), (vertex3.z - vertex2.z))
+                
+                let normalVector = normalize(cross(vector1, vector2))
+                let pitch = atan2(normalVector.y, sqrt(normalVector.x * normalVector.x + normalVector.z * normalVector.z))
+                let yaw = -atan2(normalVector.x, normalVector.z)
+                let calculatedEulerAngels = SCNVector3(pitch, yaw, 0)
+                
                 let vertices: [SCNVector3] = [vertex1, vertex2, vertex3, vertex4]
                 let vertexSource = SCNGeometrySource(vertices: vertices)
+
+                self.addChildNode(DomeTile(vertexSource: vertexSource, centerPoint: centerPoint, isScanned: false, isHighlighted: false, calculatedEulerAngles: calculatedEulerAngels))
                 
-                let rectangleNode = buildChildNode(vertexSource: vertexSource, nodeStatus: .normal)
-                self.addChildNode(rectangleNode)
-            
+            }
+        }
+    }
+    
+    func subtractVectors(_ vector1: SCNVector3, _ vector2: SCNVector3) -> SCNVector3 {
+        return SCNVector3Make(vector1.x - vector2.x, vector1.y - vector2.y, vector1.z - vector2.z)
+    }
+    
+    func highlightClosest(cameraPos: simd_float3, domeAnchor: simd_float3) {
+        var closestNode: SCNNode? = nil
+        var closestDistance: Float = 1.0
+        print(domeAnchor)
+        for node in childNodes {
+            if let domeTile = (node as? DomeTile) {
+                if domeTile.isScanned {
+                    continue
+                }
                 
-                
-                if (i == 0) {
-                    break
+                let d = simd_distance(cameraPos, domeAnchor + simd_float3(domeTile.centerPoint))
+                if(d < closestDistance) {
+                    closestDistance = d
+                    closestNode = node
                 }
             }
-        }
-    }
-    
-    
-    func calculateCenterPositionOfHighlightedNode() -> SCNVector3 {
-        let i = 1 + highlightedNode / verticalSegments  //verticalSemgents = 20, i = index in "row"
-        let j = -1 + highlightedNode % verticalSegments // j = index in row
-        // angles
-        let phi1 = CGFloat(i) * .pi / 2 / CGFloat(horizontalSegments - 1)
-        let phi2 = CGFloat(i+1) * .pi / 2 / CGFloat(horizontalSegments - 1)
-        let theta1 = CGFloat(j) * 2 * .pi / CGFloat(verticalSegments - 1)
-        let theta2 = CGFloat(j+1) *  2  * .pi / CGFloat(verticalSegments - 1)
-        // vertices
-        let vertex1 = SCNVector3(radius * sin(phi1) * cos(theta1), radius * cos(phi1), radius * sin(phi1) * sin(theta1))
-        let vertex2 = SCNVector3(radius * sin(phi1) * cos(theta2), radius * cos(phi1), radius * sin(phi1) * sin(theta2))
-        let vertex3 = SCNVector3(radius * sin(phi2) * cos(theta2), radius * cos(phi2), radius * sin(phi2) * sin(theta2))
-        let vertex4 = SCNVector3(radius * sin(phi2) * cos(theta1), radius * cos(phi2), radius * sin(phi2) * sin(theta1))
-        // center point
-        let centerPoint = calculateAverage(vertex1: vertex1, vertex2: vertex2, vertex3: vertex3, vertex4: vertex4)
-        
-        let geometry = SCNSphere(radius: 0.01)
-        let material = SCNMaterial()
-        material.diffuse.contents = UIColor.red
-        geometry.materials = [material]
+        }        
 
-        // Create a node with the geometry
-        let node = SCNNode(geometry: geometry)
-
-        // Set the position of the node based on the center point
-        node.position = centerPoint
-
-        // Add the node to the scene or another parent node
-        // For example, assuming you have a scene called 'scene':
-        self.addChildNode(node)
-//        print("\(centerPoint)")
-        return centerPoint
-    }
-    
-    func calculateAverage(vertex1: SCNVector3, vertex2: SCNVector3, vertex3: SCNVector3, vertex4: SCNVector3) -> SCNVector3 {
-        let vertexCount = 4
-        
-        // Sum up the individual components
-        var sumX: Float = 0.0
-        var sumY: Float = 0.0
-        var sumZ: Float = 0.0
-        
-        sumX += vertex1.x
-        sumY += vertex1.y
-        sumZ += vertex1.z
-        
-        sumX += vertex2.x
-        sumY += vertex2.y
-        sumZ += vertex2.z
-        
-        sumX += vertex3.x
-        sumY += vertex3.y
-        sumZ += vertex3.z
-        
-        sumX += vertex4.x
-        sumY += vertex4.y
-        sumZ += vertex4.z
-        
-        // Calculate the average
-        let averageX = sumX / Float(vertexCount)
-        let averageY = sumY / Float(vertexCount)
-        let averageZ = sumZ / Float(vertexCount)
-        
-        let averageVertex = SCNVector3(averageX, averageY, averageZ)
-        return averageVertex
-    }
-    
-    
-
-    
-    func buildChildNode(vertexSource: SCNGeometrySource, nodeStatus: nodeStatus) -> SCNNode {
-        
-        switch nodeStatus {
-        case .normal:
-            let indices: [UInt16] = [0, 1, 1, 2, 2, 3, 3, 0]
-            let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
-            let element = SCNGeometryElement(data: indexData, primitiveType: .line, primitiveCount: indices.count / 2, bytesPerIndex: MemoryLayout<UInt16>.size)
-            let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
-            
-            let material = SCNMaterial()
-            material.diffuse.contents = UIColor.WGrey
-            geometry.materials = [material]
-            
-            let rectangleNode = SCNNode(geometry: geometry)
-            return rectangleNode
-        case .toBeScannedRightNow:
-            let indices: [UInt16] = [0, 1, 1, 2, 2, 3, 3, 0]
-            let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
-            let element = SCNGeometryElement(data: indexData, primitiveType: .line, primitiveCount: indices.count / 2, bytesPerIndex: MemoryLayout<UInt16>.size)
-            let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
-            
-            let material = SCNMaterial()
-            material.diffuse.contents = UIColor.blue
-            geometry.materials = [material]
-            
-            let rectangleNode = SCNNode(geometry: geometry)
-            return rectangleNode
-        case .alreadyScanned:
-            let indices: [UInt16] = [0, 1, 2, 2, 3, 0]
-            let indexData = Data(bytes: indices, count: MemoryLayout<UInt16>.size * indices.count)
-            let element = SCNGeometryElement(data: indexData, primitiveType: .triangles, primitiveCount: indices.count / 3, bytesPerIndex: MemoryLayout<UInt16>.size)
-            let geometry = SCNGeometry(sources: [vertexSource], elements: [element])
-            
-            let material = SCNMaterial()
-            material.diffuse.contents = UIColor.green
-            material.isDoubleSided = true
-            
-            geometry.materials = [material]
-            
-            let rectangleNode = SCNNode(geometry: geometry)
-            return rectangleNode
-            
-        }
-    }
-    
-    
-    
-    func highlightNode(at index: Int) {
-        guard index >= 0 && index < horizontalSegments * verticalSegments else {
+        if(closestNode == nil) {
             return
         }
-        // Mark the previous node as already scanned.
-        if index > 0 {
-            let vertexSource = getVertexSource(from: self.childNodes[index-1])!
-            let rectangleNode = buildChildNode(vertexSource: vertexSource, nodeStatus: .alreadyScanned)
-            self.addChildNode(rectangleNode)
-        }
-        // Mark the current node as to be scanned
-        let vertexSource = getVertexSource(from: self.childNodes[index])!
-        let rectangleNode = buildChildNode(vertexSource: vertexSource, nodeStatus: .toBeScannedRightNow)
-        self.addChildNode(rectangleNode)
-        
-        highlightedNode = index
-    }
-    
-    func getNodeCoordinates() -> simd_float3 {
-        
-        let highlightedNode = self.childNodes[self.highlightedNode]
-        
-        
-        return highlightedNode.simdEulerAngles
-    }
-    
-    
-    
-    
-    func getVertexSource(from rectangleNode: SCNNode) -> SCNGeometrySource? {
-        guard let geometry = rectangleNode.geometry else {
-            return nil
-        }
-        
-        if let vertexSource = geometry.sources.first(where: { $0.semantic == .vertex }) {
-            return vertexSource
-        }
-        return nil
-    }
 
-
-    func resetHighlight(for node: SCNNode) {
-        if let geometry = node.geometry {
-            let material = SCNMaterial()
-            material.diffuse.contents = UIColor.WGrey
-            geometry.materials = [material]
-            
-            // Reset line width to default value
-            if let element = geometry.elements.first {
-                element.pointSize = 1.0  // Reset to the default line thickness
+        if let domeTile = (closestNode as? DomeTile) {
+            if !domeTile.isScanned {
+                highlightedNode?.setNormal()
+                highlightedNode = domeTile
+                domeTile.setHighlighted()
             }
         }
     }
-
     
-        
-    func highlightNextNode() {
-        let nextIndex = highlightedNode + 1
-        highlightNode(at: nextIndex)
+    func setHighlightedTileAsScanned() {
+            highlightedNode?.setScanned()
+            highlightedNode = nil
     }
     
     func enableDragging() {
@@ -299,6 +171,7 @@ class Dome: SCNNode {
             default:
                 break
         }
+        updateGeometry()
     }
     
     @objc func handlePinch(_ gesture: UIPinchGestureRecognizer) {
@@ -317,6 +190,39 @@ class Dome: SCNNode {
                 break
         }
         updateGeometry()
+    }
+    
+    func calculateAverage(vertex1: SCNVector3, vertex2: SCNVector3, vertex3: SCNVector3, vertex4: SCNVector3) -> SCNVector3 {
+        let vertexCount = 4
+        
+        // Sum up the individual components
+        var sumX: Float = 0.0
+        var sumY: Float = 0.0
+        var sumZ: Float = 0.0
+        
+        sumX += vertex1.x
+        sumY += vertex1.y
+        sumZ += vertex1.z
+        
+        sumX += vertex2.x
+        sumY += vertex2.y
+        sumZ += vertex2.z
+        
+        sumX += vertex3.x
+        sumY += vertex3.y
+        sumZ += vertex3.z
+        
+        sumX += vertex4.x
+        sumY += vertex4.y
+        sumZ += vertex4.z
+        
+        // Calculate the average
+        let averageX = sumX / Float(vertexCount)
+        let averageY = sumY / Float(vertexCount)
+        let averageZ = sumZ / Float(vertexCount)
+        
+        let averageVertex = SCNVector3(averageX, averageY, averageZ)
+        return averageVertex
     }
     
     required init?(coder aDecoder: NSCoder) {

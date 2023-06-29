@@ -11,6 +11,7 @@
 		B921B1252A1A8FB5003C6D37 /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = B921B1242A1A8FB5003C6D37 /* Button.swift */; };
 		B921B1272A1AA2FB003C6D37 /* ViewController+ApplicationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B921B1262A1AA2FB003C6D37 /* ViewController+ApplicationState.swift */; };
 		B952F4CD2A10EACC001EF4F3 /* SCNLine in Frameworks */ = {isa = PBXBuildFile; productRef = B952F4CC2A10EACC001EF4F3 /* SCNLine */; };
+		B957B2BD2A4C6F2900779E5D /* DomeTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = B957B2BC2A4C6F2900779E5D /* DomeTile.swift */; };
 		B95B1CF62A100C7800B70C3B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B95B1CF52A100C7800B70C3B /* AppDelegate.swift */; };
 		B95B1CF82A100C7800B70C3B /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = B95B1CF72A100C7800B70C3B /* art.scnassets */; };
 		B95B1CFA2A100C7800B70C3B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B95B1CF92A100C7800B70C3B /* ViewController.swift */; };
@@ -46,6 +47,7 @@
 		A70D28642A41D810008F7678 /* SaveToPhotoLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveToPhotoLibrary.swift; sourceTree = "<group>"; };
 		B921B1242A1A8FB5003C6D37 /* Button.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Button.swift; sourceTree = "<group>"; };
 		B921B1262A1AA2FB003C6D37 /* ViewController+ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+ApplicationState.swift"; sourceTree = "<group>"; };
+		B957B2BC2A4C6F2900779E5D /* DomeTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomeTile.swift; sourceTree = "<group>"; };
 		B95B1CF22A100C7800B70C3B /* Wundermental.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wundermental.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B95B1CF52A100C7800B70C3B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B95B1CF72A100C7800B70C3B /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = art.scnassets; sourceTree = "<group>"; };
@@ -157,6 +159,7 @@
 			isa = PBXGroup;
 			children = (
 				B99D1EE92A1901B3005A631E /* Dome.swift */,
+				B957B2BC2A4C6F2900779E5D /* DomeTile.swift */,
 			);
 			path = BoundingBox;
 			sourceTree = "<group>";
@@ -308,6 +311,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B921B1252A1A8FB5003C6D37 /* Button.swift in Sources */,
+				B957B2BD2A4C6F2900779E5D /* DomeTile.swift in Sources */,
 				B95B1CFA2A100C7800B70C3B /* ViewController.swift in Sources */,
 				B99D1EEA2A1901B3005A631E /* Dome.swift in Sources */,
 				B921B1272A1AA2FB003C6D37 /* ViewController+ApplicationState.swift in Sources */,
@@ -491,7 +495,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4VR8L2838U;
+				DEVELOPMENT_TEAM = M5Q9H7KAHJ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app will write images in your photo gallery.";
@@ -523,7 +527,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4VR8L2838U;
+				DEVELOPMENT_TEAM = M5Q9H7KAHJ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app will write images in your photo gallery.";

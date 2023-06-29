@@ -23,8 +23,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     public var displayedDome: Dome!
     public var lidarAvailable : Bool = false // default
     private var radius: CGFloat = 0.3
-    private var horizontalSegments: Int = 10
-    private var verticalSegments: Int = 20
+    private var horizontalSegments: Int = 6
+    private var verticalSegments: Int = 12
     private var timer: Timer?
     
     @IBOutlet weak var errorLabel: MessageLabel!
@@ -91,32 +91,45 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     }
     
     
-    
-    
     @objc func calculateDistanceAndAngle() {
-        guard let camera = sceneView.session.currentFrame?.camera,
-                  let domeAnchor = domeAnchor else {
-                return
-            }
-        let cameraPosition = simd_make_float3(camera.transform.columns.3)
-        let domeAnchorPosition = simd_make_float3(domeAnchor.transform.columns.3)
+        guard let camera = sceneView.session.currentFrame?.camera else {
+            return
+        }
         
-        let relativeNodePosition = displayedDome.calculateCenterPositionOfHighlightedNode()
-        let domeNodePosition = domeAnchorPosition + simd_float3(relativeNodePosition)
-        let distance = simd_distance(domeNodePosition, cameraPosition)
-        let distanceText = String(format: "%.2f", distance)
+        var cameraPosition = simd_make_float3(camera.transform.columns.3)
+        cameraPosition = simd_make_float3(cameraPosition.x, cameraPosition.y, cameraPosition.z)
+        guard let cameraEulerAngle = sceneView.session.currentFrame?.camera.eulerAngles else { return }
         
+        print(simd_float3(displayedDome.worldPosition))
         
-        if (distance < 0.03) {
-            distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.green
-            distanceToCurrentlySelectedNodeLabel.text = "\(distanceText) 📸 ✅"
-            takePicture()
-            displayedDome.highlightNextNode()
-            scanProgressLabel.text = "\(displayedDome.highlightedNode)/\(horizontalSegments*verticalSegments)"
-
+        displayedDome.highlightClosest(cameraPos: cameraPosition, domeAnchor: simd_float3(displayedDome.worldPosition))
+               
+        var distance = Float(10.0)
+        var rotationIsCorrect = false
+        if let domeTile = displayedDome.highlightedNode {
+            distance = simd_distance(simd_float3(displayedDome.worldPosition) + simd_float3(domeTile.centerPoint), cameraPosition)
+            let calculatedEuler = domeTile.calculatedEulerAngels
+            
+            rotationIsCorrect = (abs(abs(calculatedEuler.x) - abs(cameraEulerAngle.x)) < 0.5
+                && abs(abs(calculatedEuler.y) - abs(cameraEulerAngle.y)) < 0.5)
+        }
+      
+        if(distance > Float(radius) && distance < (Float(radius) + 10)) {
+            distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WGreen
+            distanceToCurrentlySelectedNodeLabel.text = "Perfect"
+        } else if(distance < Float(radius)) {
+            distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WLightRed
+            distanceToCurrentlySelectedNodeLabel.text = "Move further away"
         } else {
-            distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.white
-            distanceToCurrentlySelectedNodeLabel.text = "\(distanceText)"
+            distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WLightRed
+            distanceToCurrentlySelectedNodeLabel.text = "Move closer"
+        }
+        if(distance > Float(radius) && distance < Float(radius) + 10
+            && rotationIsCorrect) {
+            distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WGreen
+            distanceToCurrentlySelectedNodeLabel.text = "Picture taken 📸 ✅"
+            displayedDome.setHighlightedTileAsScanned()
+            takePicture()
         }
     }
     
@@ -143,12 +156,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     @objc func getDepthImage() -> CIImage {
         let depthMap = sceneView.session.currentFrame?.sceneDepth?.depthMap
         let depthImage = CIImage(cvPixelBuffer: depthMap!)
-//        let context = CIContext(options: nil)
-//        if let cgImage = context.createCGImage(depthImage, from: depthImage.extent) {
-//            depthUIImage = UIImage(cgImage: cgImage)
-//            depthCGImage = cgImage
-//
-//        }
         return depthImage
     }
     
@@ -178,6 +185,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         
         if let firstResult = results.first{
             domeAnchor = ARAnchor(transform: firstResult.worldTransform)
+            print(simd_make_float3(domeAnchor.transform.columns.3))
             sceneView.session.add(anchor: domeAnchor)
             nextButton.setPrimary()
         }
@@ -197,20 +205,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
     @objc
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
-        //dome geht nicht
-        // Present an error message to the user
-    //    guard let depthMap = frame.sceneDepth?.depthMap else { return }
 
-    //    let depthImage = CIImage(cvPixelBuffer: depthMap)
-    //    let context = CIContext(options: nil)
-
-    //    if let cgImage = context.createCGImage(depthImage, from: depthImage.extent) {
-    //        depthUIImage = UIImage(cgImage: cgImage)
-    //        depthCGImage = cgImage
-
-    //    }
-
-        
     }
     
     func sessionWasInterrupted(_ session: ARSession) {
