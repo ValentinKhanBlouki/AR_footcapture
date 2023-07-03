@@ -63,6 +63,7 @@ extension ViewController {
                 backButton.setTitle("Back", for: [])
                 backButton.isHidden = true
                 distanceToCurrentlySelectedNodeLabel.isHidden = true
+                angleOfPhone.isHidden = true
                 //loadModelButton.isHidden = true
                 //flashlightButton.isHidden = true
                 break
@@ -81,6 +82,7 @@ extension ViewController {
                 backButton.setSecondary()
                 backButton.isHidden = false
                 distanceToCurrentlySelectedNodeLabel.isHidden = false
+                angleOfPhone.isHidden = false
                 //displayInstruction(Message("Please wait for stable tracking"))
                 break
                 
@@ -94,9 +96,10 @@ extension ViewController {
                 nextButton.isEnabled = true
                 nextButton.setTitle("Share", for: [])
                 
-                backButton.setTitle("Restart Scan", for: [])
+                backButton.setTitle("New Scan", for: [])
                 backButton.setSecondary()
                 backButton.isHidden = false
+                
                 break
             }
             

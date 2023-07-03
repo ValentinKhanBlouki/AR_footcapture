@@ -11,9 +11,10 @@ import ARKit
 import Foundation
 import SCNLine
 import RealityKit
+import Photos
 
 class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
-
+    
     @IBOutlet var sceneView: ARSCNView!
     internal var internalState: State = .placeDome
     
@@ -26,6 +27,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     private var horizontalSegments: Int = 6
     private var verticalSegments: Int = 12
     private var timer: Timer?
+    private var distanceTolerance = Float(0.2)
+    private var angleTolerance = Float(0.5)
     
     @IBOutlet weak var errorLabel: MessageLabel!
     @IBOutlet weak var backButton: Button!
@@ -35,10 +38,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     @IBOutlet weak var highlightButton: Button!
     @IBOutlet weak var scanProgressLabel: UILabel!
     @IBOutlet weak var distanceToCurrentlySelectedNodeLabel: UILabel!
+    @IBOutlet weak var angleOfPhone: UILabel!
+    @IBOutlet weak var createAlbum: Button!
+    @IBOutlet weak var albumName: UITextField!
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-       
+        
         sceneView.delegate = self
         let scene = SCNScene()
         sceneView.scene = scene
@@ -63,30 +70,57 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if !lidarAvailable {
-                displayLiDARAlert()
+            displayLiDARAlert()
         }
     }
-
+    
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         sceneView.session.pause()
     }
     
+    @objc func dismissKeyboard() {
+        //Causes the view (or one of its embedded text fields) to resign the first responder status.
+        view.endEditing(true)
+    }
+    
+    
+    @IBAction func createButtonTapped(_ sender: Any){
+        dismissKeyboard()
+        if let text = albumName.text {
+            Album().createAlbum(withTitle: text) { album in
+                if let createdAlbum = album {
+                    print("Album created with local identifier: \(createdAlbum.localIdentifier)")
+                } else {
+                    print("Failed to create album.")
+                }
+            }
+            createAlbum.isHidden = true
+            albumName.isHidden = true
+
+            
+
+        
+        } else {
+            print("No text entered.")
+        }
+    }
+
     
     @IBAction func nextButtonTapped(_ sender: Any) {
         if state == State.placeDome {
-           timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(calculateDistanceAndAngle), userInfo: nil, repeats: true)
+            timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(calculateDistanceAndAngle), userInfo: nil, repeats: true)
         }
         switchToNextState()
     }
-
+    
     @IBAction func backButtonTapped(_ sender: Any) {
         if state == State.finish {
             state = State.placeDome
             return
         }
-            
+        
         switchToPreviousState()
     }
     
@@ -103,29 +137,44 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         print(simd_float3(displayedDome.worldPosition))
         
         displayedDome.highlightClosest(cameraPos: cameraPosition, domeAnchor: simd_float3(displayedDome.worldPosition))
-               
+        
         var distance = Float(10.0)
         var rotationIsCorrect = false
         if let domeTile = displayedDome.highlightedNode {
             distance = simd_distance(simd_float3(displayedDome.worldPosition) + simd_float3(domeTile.centerPoint), cameraPosition)
             let calculatedEuler = domeTile.calculatedEulerAngels
             
-            rotationIsCorrect = (abs(abs(calculatedEuler.x) - abs(cameraEulerAngle.x)) < 0.5
-                && abs(abs(calculatedEuler.y) - abs(cameraEulerAngle.y)) < 0.5)
+            rotationIsCorrect = (abs(abs(calculatedEuler.x) - abs(cameraEulerAngle.x)) < angleTolerance
+                                 && abs(abs(calculatedEuler.y) - abs(cameraEulerAngle.y)) < angleTolerance)
+            
+            if(!(abs(abs(calculatedEuler.x) - abs(cameraEulerAngle.x)) < angleTolerance
+               && abs(abs(calculatedEuler.y) - abs(cameraEulerAngle.y)) < angleTolerance)){
+                angleOfPhone.text = "Tilt phone"
+                angleOfPhone.backgroundColor = UIColor.WLightRed
+
+                
+            }else{
+                angleOfPhone.text = "Perfect"
+                angleOfPhone.backgroundColor = UIColor.WGreen
+
+            }
+            
         }
-      
-        if(distance > Float(radius) && distance < (Float(radius) + 10)) {
+        
+        if(distance > Float(radius)*0.8 && distance < (Float(radius)*0.8)+distanceTolerance) {
             distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WGreen
             distanceToCurrentlySelectedNodeLabel.text = "Perfect"
-        } else if(distance < Float(radius)) {
-            distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WLightRed
-            distanceToCurrentlySelectedNodeLabel.text = "Move further away"
-        } else {
+            
+        } else if(distance >= Float(radius)*0.8){
             distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WLightRed
             distanceToCurrentlySelectedNodeLabel.text = "Move closer"
+        } else if(distance <= Float(radius)*0.8+distanceTolerance){
+            distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WLightRed
+            distanceToCurrentlySelectedNodeLabel.text = "Move further away"
+
         }
-        if(distance > Float(radius) && distance < Float(radius) + 10
-            && rotationIsCorrect) {
+        if(distance > Float(radius)*0.8 && distance < (Float(radius)*0.8)+distanceTolerance
+           && rotationIsCorrect) {
             distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WGreen
             distanceToCurrentlySelectedNodeLabel.text = "Picture taken 📸 ✅"
             displayedDome.setHighlightedTileAsScanned()
@@ -135,24 +184,59 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
     @objc func takePicture() {
         
-        // GET IMAGES
-        displayedDome.isHidden = true
-        let snapshot = sceneView.snapshot()
-        if lidarAvailable {
-            let depthImage = getDepthImage()
-            if let tiff = Tiff().convertToTIFF(depthImage){
-                        Tiff().saveTIFFToPhotoLibrary(tiff) //CIImage!
-                    }
+        let imageBaseFileName = Int(arc4random_uniform(10000))
+        
+        
+        //let snapshot = sceneView.snapshot()
+        // Ensure you have a reference to your ARSession and ARFrame
+        let session = sceneView.session
+        guard let currentFrame = session.currentFrame else {
+            return
         }
-        SaveToPhotoLibrary().saveImageAsHEICToPhotoGallery(snapshot)
-        // SIGNAL COMPLETION TO USER
-        let systemSoundID: SystemSoundID = 1108 // Camera shutter sound ID
-        AudioServicesPlaySystemSound(systemSoundID)
-        displayedDome.isHidden = false
+        // Retrieve the camera image from the ARFrame
+        let pixelBuffer = currentFrame.capturedImage
+        
+        // Create a CIImage from the pixel buffer
+        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+        
+        // Create a CIContext
+        let context = CIContext()
+        
+        // Render the CIImage to a CGImage
+        guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else {
+            return
+        }
+        
+        // Create a UIImage from the CGImage
+        let snapshot = UIImage(cgImage: cgImage)
+        
+        if let text = albumName.text {
+            let fetchOptions = PHFetchOptions()
+            fetchOptions.predicate = NSPredicate(format: "title = %@", text)
+            let album = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: fetchOptions).firstObject
+
+            if let album = album{
+                Album().saveImageToAlbum(image: snapshot, album: album) { success, error in
+                    if success {
+                        print("Image saved to album successfully.")
+                        
+                    } else {
+                        print("Failed to save image to album. Error: \(String(describing: error))")
+                       
+                    }
+                }
+            } else {
+                print("Album not found or image is nil.")
+               
+            }
+        } else {
+            print("No text entered.")
+        }
+    
+        
     }
-
-
-
+    
+    
     @objc func getDepthImage() -> CIImage {
         let depthMap = sceneView.session.currentFrame?.sceneDepth?.depthMap
         let depthImage = CIImage(cvPixelBuffer: depthMap!)
@@ -160,13 +244,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     }
     
     @objc func displayLiDARAlert() {
-            let alertController = UIAlertController(title: "No LiDAR Sensor", message: "Your phone does not have the LiDAR sensor necessary to acquire depth data. Therefore only normal images will be saved.", preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "OK", style: .default) { (_) in
-                // Continue with normal image saving or perform other actions
-            }
-            alertController.addAction(okAction)
-            present(alertController, animated: true, completion: nil)
+        let alertController = UIAlertController(title: "No LiDAR Sensor", message: "Your phone does not have the LiDAR sensor necessary to acquire depth data. Therefore only normal images will be saved.", preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default) { (_) in
+            // Continue with normal image saving or perform other actions
         }
+        alertController.addAction(okAction)
+        present(alertController, animated: true, completion: nil)
+    }
     
     
     //MARK: Object Placement
@@ -194,7 +278,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
             errorLabel.showAutoHideMessage(Errors.domePlaceNoSurface)
         }
     }
-
+    
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
         if displayedDome != nil {
             radius = displayedDome.radius
@@ -205,7 +289,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
     @objc
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
-
+        
     }
     
     func sessionWasInterrupted(_ session: ARSession) {
@@ -222,7 +306,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
 
 extension Array {
     func chunked(into size: Int) -> [[Element]] {
-              return stride(from: 0, to: count, by: size).map {
+        return stride(from: 0, to: count, by: size).map {
             Array(self[$0 ..< Swift.min($0 + size, count)])
         }
     }
