@@ -16,7 +16,7 @@ import Photos
 class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
     @IBOutlet var sceneView: ARSCNView!
-    internal var internalState: State = .placeDome
+    internal var internalState: State = .albumName
     
     
     private var domeAnchor: ARAnchor!
@@ -46,6 +46,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        
         sceneView.delegate = self
         let scene = SCNScene()
         sceneView.scene = scene
@@ -53,8 +54,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         sceneView.addGestureRecognizer(tapGesture)
-        state = State.placeDome
+        state = State.albumName
         nextButton.setSecondary()
+        createAlbum.setSecondary()
+
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -63,6 +66,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         lidarAvailable = ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth)
         if lidarAvailable {
             configuration.frameSemantics = .sceneDepth
+        }
+        if let hiResFormat = ARWorldTrackingConfiguration.recommendedVideoFormatFor4KResolution {
+            configuration.videoFormat = hiResFormat
         }
         sceneView.session.run(configuration)
     }
@@ -89,21 +95,25 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     @IBAction func createButtonTapped(_ sender: Any){
         dismissKeyboard()
         if let text = albumName.text {
+            if text.isEmpty {
+                let alertController = UIAlertController(title: "Album name empty", message: "Please type in a name for the album", preferredStyle: .alert)
+                let okAction = UIAlertAction(title: "OK", style: .default) { (_) in
+                    // Continue with normal image saving or perform other actions
+                }
+                alertController.addAction(okAction)
+                present(alertController, animated: true, completion: nil)
+                return
+            }
+            
             Album().createAlbum(withTitle: text) { album in
                 if let createdAlbum = album {
                     print("Album created with local identifier: \(createdAlbum.localIdentifier)")
+                    self.switchToNextState()
                 } else {
                     print("Failed to create album.")
                 }
             }
-            createAlbum.isHidden = true
-            albumName.isHidden = true
-
-            
-
         
-        } else {
-            print("No text entered.")
         }
     }
 
@@ -203,7 +213,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         let context = CIContext()
         
         // Render the CIImage to a CGImage
-        guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else {
+        let imageWidth = CVPixelBufferGetWidth(pixelBuffer)
+        let imageHeight = CVPixelBufferGetHeight(pixelBuffer)
+        
+        print(imageWidth)
+        print(imageHeight)
+
+        // Render the CIImage to a CGImage
+        guard let cgImage = context.createCGImage(ciImage, from: CGRect(x: 0, y: 0, width: imageWidth, height: imageHeight)) else {
             return
         }
         
@@ -256,6 +273,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     //MARK: Object Placement
     @objc
     func handleTap(_ sender: UITapGestureRecognizer){
+        self.view.endEditing(true)
+        if albumName.text != "" {
+            print("set primary")
+            createAlbum.setPrimary()
+        }
         if state != State.placeDome {
             return
         }
