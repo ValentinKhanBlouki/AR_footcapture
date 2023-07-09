@@ -24,7 +24,7 @@ class Button: UIButton {
     }
     
     func setup() {
-        backgroundColor = .WBlue
+        backgroundColor = .WGrey
         layer.cornerRadius = 8
         clipsToBounds = true
         setTitleColor(.white, for: [])
@@ -34,15 +34,18 @@ class Button: UIButton {
     }
     
     func setSecondary() {
+        print("secondary")
         backgroundColor = .WGrey
     }
     
     func setPrimary() {
+        print("primary")
         backgroundColor = .WBlue
     }
     
     var toggledOn: Bool = true {
         didSet {
+            print("test")
             if !isEnabled {
                 backgroundColor = .WGrey
                 return

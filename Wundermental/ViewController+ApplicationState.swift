@@ -8,13 +8,16 @@
 import Foundation
 import ARKit
 import SceneKit
+import UIKit
 
 extension ViewController {
+    
     
     enum State {
         case placeDome
         case scanning
         case finish
+        case albumName
     }
     
     /// - Tag: ARObjectScanningConfiguration
@@ -27,6 +30,8 @@ extension ViewController {
             // 1. Check that preconditions for the state change are met.
             var newState = newValue
             switch newValue {
+            case .albumName:
+                newState = .albumName
             case .placeDome:
                 newState = .placeDome
                 break
@@ -48,24 +53,42 @@ extension ViewController {
             
             // 2. Apply changes as needed per state.
             internalState = newState
-            
+            print(newState)
             switch newState {
+            case .albumName :
+                    albumName.layer.cornerRadius = 10.0
+                    albumName.textColor = UIColor.black
+                    albumName.attributedPlaceholder = NSAttributedString(
+                    string: "enter album name",
+                    attributes: [NSAttributedString.Key.foregroundColor: UIColor.gray]
+                )
+                
+                nextButton.isHidden = true
+                backButton.isHidden = true
+                instructionLabel.isHidden = true
+                distanceToCurrentlySelectedNodeLabel.isHidden = true
+                angleOfPhone.isHidden = true
+                
             case .placeDome:
                 if displayedDome != nil {
                     displayedDome.enableDragging()
                 }
                 print("State: Place Dome")
-                //showBackButton(false)
-                instructionLabel.display(Instructions.placeDome)
-                nextButton.isEnabled = true
-                nextButton.setTitle("Next", for: [])
+                DispatchQueue.main.async {
+                    // UInextButton.isEnabled = true
+                    self.nextButton.isEnabled = true
+                    self.nextButton.isHidden = false
+                    self.nextButton.setTitle("Next", for: [])
+                    self.createAlbum.isHidden = true
+                    self.albumName.isHidden = true
+                    self.instructionLabel.isHidden = false
+                    self.backButton.isHidden = true
+                    self.distanceToCurrentlySelectedNodeLabel.isHidden = true
+                    self.angleOfPhone.isHidden = true
 
-                backButton.setTitle("Back", for: [])
-                backButton.isHidden = true
-                distanceToCurrentlySelectedNodeLabel.isHidden = true
-                angleOfPhone.isHidden = true
-                //loadModelButton.isHidden = true
-                //flashlightButton.isHidden = true
+                }
+                instructionLabel.display(Instructions.placeDome)
+               
                 break
                 
             case .scanning:
@@ -110,6 +133,8 @@ extension ViewController {
         print("switch to preivcous")
         print(state)
         switch state {
+        case .albumName:
+            break
         case .placeDome:
             break
         case .scanning:
@@ -125,6 +150,8 @@ extension ViewController {
     func switchToNextState() {
         print("switch to next")
         switch state {
+        case .albumName:
+            state = .placeDome
         case .placeDome:
             state = .scanning
             break
