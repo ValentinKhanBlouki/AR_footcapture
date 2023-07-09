@@ -28,7 +28,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     private var verticalSegments: Int = 12
     private var timer: Timer?
     private var distanceTolerance = Float(0.2)
-    private var angleTolerance = Float(0.5)
+    private var angleTolerance = Float(0.3)
     
     @IBOutlet weak var errorLabel: MessageLabel!
     @IBOutlet weak var backButton: Button!
@@ -56,8 +56,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         sceneView.addGestureRecognizer(tapGesture)
         state = State.albumName
         nextButton.setSecondary()
-        createAlbum.setSecondary()
+        backButton.setTitle("Back", for: [])
 
+        createAlbum.setSecondary()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -93,6 +94,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
     
     @IBAction func createButtonTapped(_ sender: Any){
+        if (state == State.detailPhotos) {
+            takePicture()
+            errorLabel.showAutoHideMessage(Message("picture taken"), duration: 1.0)
+            return
+        }
+        
         dismissKeyboard()
         if let text = albumName.text {
             if text.isEmpty {
@@ -113,29 +120,30 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
                     print("Failed to create album.")
                 }
             }
-        
         }
     }
 
     
     @IBAction func nextButtonTapped(_ sender: Any) {
         if state == State.placeDome {
-            timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(calculateDistanceAndAngle), userInfo: nil, repeats: true)
+            timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(scan3DObject), userInfo: nil, repeats: true)
         }
         switchToNextState()
     }
     
     @IBAction func backButtonTapped(_ sender: Any) {
-        if state == State.finish {
-            state = State.placeDome
-            return
-        }
-        
         switchToPreviousState()
     }
     
     
-    @objc func calculateDistanceAndAngle() {
+    @objc func scan3DObject() {
+        
+        if displayedDome == nil {
+            return
+        }
+        if displayedDome.allDomeTilesAreScanned() {
+            switchToNextState()
+        }
         guard let camera = sceneView.session.currentFrame?.camera else {
             return
         }
@@ -143,9 +151,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         var cameraPosition = simd_make_float3(camera.transform.columns.3)
         cameraPosition = simd_make_float3(cameraPosition.x, cameraPosition.y, cameraPosition.z)
         guard let cameraEulerAngle = sceneView.session.currentFrame?.camera.eulerAngles else { return }
-        
-        print(simd_float3(displayedDome.worldPosition))
-        
+                
         displayedDome.highlightClosest(cameraPos: cameraPosition, domeAnchor: simd_float3(displayedDome.worldPosition))
         
         var distance = Float(10.0)
@@ -291,7 +297,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         
         if let firstResult = results.first{
             domeAnchor = ARAnchor(transform: firstResult.worldTransform)
-            print(simd_make_float3(domeAnchor.transform.columns.3))
             sceneView.session.add(anchor: domeAnchor)
             nextButton.setPrimary()
         }

@@ -24,6 +24,8 @@ class Instructions {
     
     static let scanObject = Message("Move around the dome until every surface is yellow to scan the object.", title: "Scan Object")
     
+    static let detailPhotos = Message("Now take some detail photos (e.g. the woundsurface)", title: "Detail Photos")
+    
     static let finish = Message("Good job! You finished the scan. You can tap on the share button to send it to other devices or start a new scan.", title: "Finish & Share")
 }
 

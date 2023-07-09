@@ -146,6 +146,19 @@ class Dome: SCNNode {
         }
     }
     
+    func allDomeTilesAreScanned()-> Bool {
+        var scannedTiles = 0
+        for node in childNodes {
+            if let domeTile = (node as? DomeTile) {
+                if domeTile.isScanned {
+                    scannedTiles += 1
+                }
+            }
+        }
+        return scannedTiles == childNodes.count
+        
+    }
+    
     func updateGeometry() {
         for node in self.childNodes {
                node.removeFromParentNode()
