@@ -66,7 +66,7 @@ class MessageLabel: UILabel {
         self.backgroundColor = UIColor.WLightRed
     }
     
-    func showAutoHideMessage(_ message: Message) {
+    func showAutoHideMessage(_ message: Message, duration: TimeInterval = 3.0) {
         hideTimer?.invalidate() // Cancel any previous hide timer
         
         DispatchQueue.main.async {
@@ -74,7 +74,7 @@ class MessageLabel: UILabel {
             self.isHidden = false
         }
         
-        hideTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { _ in
+        hideTimer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { _ in
             self.hideMessage()
         }
     }

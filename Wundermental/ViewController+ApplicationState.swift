@@ -18,6 +18,7 @@ extension ViewController {
         case scanning
         case finish
         case albumName
+        case detailPhotos
     }
     
     /// - Tag: ARObjectScanningConfiguration
@@ -46,6 +47,9 @@ extension ViewController {
                 newState = .scanning
                 break
                 
+            case .detailPhotos:
+                newState = .detailPhotos
+                break
             case .finish:
                 newState = .finish
                 break
@@ -53,7 +57,6 @@ extension ViewController {
             
             // 2. Apply changes as needed per state.
             internalState = newState
-            print(newState)
             switch newState {
             case .albumName :
                     albumName.layer.cornerRadius = 10.0
@@ -73,7 +76,6 @@ extension ViewController {
                 if displayedDome != nil {
                     displayedDome.enableDragging()
                 }
-                print("State: Place Dome")
                 DispatchQueue.main.async {
                     // UInextButton.isEnabled = true
                     self.nextButton.isEnabled = true
@@ -92,36 +94,50 @@ extension ViewController {
                 break
                 
             case .scanning:
+                displayedDome.isHidden = false
                 displayedDome.disableDragging()
-                print("State: Scan")
-                //loadModelButton.isHidden = true
-                //flashlightButton.isHidden = true
-                //showBackButton(false)
                 instructionLabel.display(Instructions.scanObject)
 
                 nextButton.isEnabled = true
                 nextButton.setTitle("Next", for: [])
-                backButton.setTitle("Back", for: [])
+                nextButton.setSecondary()
+                
                 backButton.setSecondary()
                 backButton.isHidden = false
+                
                 distanceToCurrentlySelectedNodeLabel.isHidden = false
                 angleOfPhone.isHidden = false
-                //displayInstruction(Message("Please wait for stable tracking"))
+                createAlbum.isHidden = true
                 break
                 
-            case .finish:
-                print("State: Finish")
-                //self.setNavigationBarTitle("Test")
-                //loadModelButton.isHidden = true
-                //flashlightButton.isHidden = false
-                //showMergeScanButton()
-                instructionLabel.display(Instructions.finish)
-                nextButton.isEnabled = true
-                nextButton.setTitle("Share", for: [])
+            case .detailPhotos:
+                instructionLabel.display(Instructions.detailPhotos)
+                displayedDome.isHidden = true
+                createAlbum.isHidden = false
+                createAlbum.setTitle("Make Picture", for: [])
                 
-                backButton.setTitle("New Scan", for: [])
+                nextButton.isEnabled = true
+                nextButton.setTitle("Finish", for: [])
+                nextButton.setPrimary()
+                
                 backButton.setSecondary()
                 backButton.isHidden = false
+                distanceToCurrentlySelectedNodeLabel.isHidden = true
+                angleOfPhone.isHidden = true
+                
+                
+            case .finish:
+                instructionLabel.display(Instructions.finish)
+                
+                nextButton.isEnabled = true
+                nextButton.setTitle("Share", for: [])
+                createAlbum.isHidden = true
+                
+                backButton.setSecondary()
+                
+                backButton.isHidden = false
+                self.distanceToCurrentlySelectedNodeLabel.isHidden = true
+                self.angleOfPhone.isHidden = true
                 
                 break
             }
@@ -130,8 +146,6 @@ extension ViewController {
     }
     
     func switchToPreviousState() {
-        print("switch to preivcous")
-        print(state)
         switch state {
         case .albumName:
             break
@@ -140,15 +154,15 @@ extension ViewController {
         case .scanning:
             state = .placeDome
             break
-        case .finish:
+        case .detailPhotos:
             state = .scanning
+        case .finish:
+            state = .detailPhotos
             break
         }
-        print(state)
     }
     
     func switchToNextState() {
-        print("switch to next")
         switch state {
         case .albumName:
             state = .placeDome
@@ -156,11 +170,13 @@ extension ViewController {
             state = .scanning
             break
         case .scanning:
+            state = .detailPhotos
+            break
+        case .detailPhotos:
             state = .finish
             break
         case .finish:
             break
         }
-        print(state)
     }
 }
