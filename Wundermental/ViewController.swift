@@ -29,6 +29,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     private var timer: Timer?
     private var distanceTolerance = Float(0.2)
     private var angleTolerance = Float(0.3)
+    private var albumNameText: String?
+
     
     @IBOutlet weak var errorLabel: MessageLabel!
     @IBOutlet weak var backButton: Button!
@@ -114,6 +116,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
             
             Album().createAlbum(withTitle: text) { album in
                 if let createdAlbum = album {
+                    self.albumNameText = text
+
                     print("Album created with local identifier: \(createdAlbum.localIdentifier)")
                     self.switchToNextState()
                 } else {
@@ -127,6 +131,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     @IBAction func nextButtonTapped(_ sender: Any) {
         if state == State.placeDome {
             timer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(scan3DObject), userInfo: nil, repeats: true)
+        }
+        
+        if state == State.finish{
+            
+            shareAssetsWithAirDrop(albumName: self.albumNameText!, presentingViewController: self)
+            
         }
         switchToNextState()
     }
@@ -258,6 +268,94 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
         
     }
+    
+    
+    
+    func shareAssetsWithAirDrop(albumName: String, presentingViewController: UIViewController) {
+        let fetchOptions = PHFetchOptions()
+        fetchOptions.predicate = NSPredicate(format: "title = %@", albumName)
+        
+        let album = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: fetchOptions).firstObject
+        
+        if let album = album {
+            let assetResults = PHAsset.fetchAssets(in: album, options: nil)
+            
+            var assetsToShare: [UIImage] = []
+            assetResults.enumerateObjects { asset, _, _ in
+                let requestOptions = PHImageRequestOptions()
+                requestOptions.isSynchronous = true
+                requestOptions.deliveryMode = .highQualityFormat
+                
+                PHImageManager.default().requestImage(for: asset, targetSize: PHImageManagerMaximumSize, contentMode: .aspectFit, options: requestOptions) { image, _ in
+                    if let image = image {
+                        assetsToShare.append(image)
+                    }
+                }
+            }
+            
+            if !assetsToShare.isEmpty {
+                let activityViewController = UIActivityViewController(activityItems: assetsToShare, applicationActivities: nil)
+                
+                // Set the excluded activity types if desired
+                activityViewController.excludedActivityTypes = [UIActivity.ActivityType.addToReadingList]
+                
+                // Set the completion handler
+                activityViewController.completionWithItemsHandler = { activityType, completed, returnedItems, error in
+                    if completed {
+                        // Sharing was successful
+                        print("Assets shared with AirDrop.")
+                    } else if let error = error {
+                        // Sharing failed with an error
+                        print("Error sharing assets: \(error.localizedDescription)")
+                    } else {
+                        // Sharing was cancelled by the user
+                        print("Sharing cancelled by user.")
+                    }
+                }
+                
+                presentingViewController.present(activityViewController, animated: true, completion: nil)
+            } else {
+                print("No assets found in the album.")
+            }
+        } else {
+            print("Album not found.")
+        }
+    }
+
+    
+//    func shareAlbumWithAirDrop(albumName: String, presentingViewController: UIViewController) {
+//        let fetchOptions = PHFetchOptions()
+//        fetchOptions.predicate = NSPredicate(format: "title = %@", albumName)
+//
+//        let album = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: fetchOptions).firstObject
+//
+//        if let album = album {
+//            let albumURL = URL(string: "photos-redirect://")?.appendingPathComponent(album.localIdentifier)
+//
+//            let activityViewController = UIActivityViewController(activityItems: [albumURL as Any], applicationActivities: nil)
+//
+//            // Set the excluded activity types if desired
+//            activityViewController.excludedActivityTypes = [UIActivity.ActivityType.addToReadingList]
+//
+//            // Set the completion handler
+//            activityViewController.completionWithItemsHandler = { activityType, completed, returnedItems, error in
+//                if completed {
+//                    // Sharing was successful
+//                    print("Album shared with AirDrop.")
+//                } else if let error = error {
+//                    // Sharing failed with an error
+//                    print("Error sharing album: \(error.localizedDescription)")
+//                } else {
+//                    // Sharing was cancelled by the user
+//                    print("Sharing cancelled by user.")
+//                }
+//            }
+//
+//            presentingViewController.present(activityViewController, animated: true, completion: nil)
+//        } else {
+//            print("Album not found.")
+//        }
+//    }
     
     
     @objc func getDepthImage() -> CIImage {
