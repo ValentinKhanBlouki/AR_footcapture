@@ -16,7 +16,7 @@ import Photos
 class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
     @IBOutlet var sceneView: ARSCNView!
-    internal var internalState: State = .albumName
+    internal var internalState: State = .placeDome
     
     
     private var domeAnchor: ARAnchor!
@@ -24,8 +24,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     public var displayedDome: Dome!
     public var lidarAvailable : Bool = false // default
     private var radius: CGFloat = 0.3
-    private var horizontalSegments: Int = 6
-    private var verticalSegments: Int = 12
+    private var horizontalSegments: Int = 5
+    private var verticalSegments: Int = 20
     private var timer: Timer?
     private var distanceTolerance = Float(0.2)
     private var angleTolerance = Float(0.3)
@@ -56,7 +56,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         sceneView.addGestureRecognizer(tapGesture)
-        state = State.albumName
+        state = State.placeDome
         nextButton.setSecondary()
         backButton.setTitle("Back", for: [])
 
