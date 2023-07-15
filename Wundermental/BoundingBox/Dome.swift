@@ -49,10 +49,13 @@ class Dome: SCNNode {
     
     func createDome() {
         highlightedNode = nil
+        let heightScale: CGFloat = 1.3
+        let widthScale: CGFloat = 1.0
+
         for i in 0..<horizontalSegments {
             let phi1 = CGFloat(i) * .pi / 2 / CGFloat(horizontalSegments - 1)
             let phi2 = CGFloat(i+1) * .pi / 2 / CGFloat(horizontalSegments - 1)
-            if (i == 0) {
+            if (i == 0 || i == (horizontalSegments - 1)) {
                 continue
             }
             
@@ -60,11 +63,11 @@ class Dome: SCNNode {
                 let theta1 = CGFloat(j) * 2 * .pi / CGFloat(verticalSegments - 1)
                 let theta2 = CGFloat(j+1) *  2  * .pi / CGFloat(verticalSegments - 1)
                 
-                // Calculate the vertices of the rectangle
-                let vertex1 = SCNVector3(radius * sin(phi1) * cos(theta1), radius * cos(phi1), radius * sin(phi1) * sin(theta1))
-                let vertex2 = SCNVector3(radius * sin(phi1) * cos(theta2), radius * cos(phi1), radius * sin(phi1) * sin(theta2))
-                let vertex3 = SCNVector3(radius * sin(phi2) * cos(theta2), radius * cos(phi2), radius * sin(phi2) * sin(theta2))
-                let vertex4 = SCNVector3(radius * sin(phi2) * cos(theta1), radius * cos(phi2), radius * sin(phi2) * sin(theta1))
+                let vertex1 = SCNVector3(radius * sin(phi1) * cos(theta1) * widthScale, radius * cos(phi1) * heightScale, radius * sin(phi1) * sin(theta1) * widthScale)
+                let vertex2 = SCNVector3(radius * sin(phi1) * cos(theta2) * widthScale, radius * cos(phi1) * heightScale, radius * sin(phi1) * sin(theta2) * widthScale)
+                let vertex3 = SCNVector3(radius * sin(phi2) * cos(theta2) * widthScale, radius * cos(phi2) * heightScale, radius * sin(phi2) * sin(theta2) * widthScale)
+                let vertex4 = SCNVector3(radius * sin(phi2) * cos(theta1) * widthScale, radius * cos(phi2) * heightScale, radius * sin(phi2) * sin(theta1) * widthScale)
+             
                 
                 let centerPoint = calculateAverage(vertex1: vertex1, vertex2: vertex2, vertex3: vertex3, vertex4: vertex4)
                 
