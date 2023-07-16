@@ -28,9 +28,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     private var verticalSegments: Int = 20
     private var timer: Timer?
     private var distanceTolerance = Float(0.2)
-    private var angleTolerance = Float(0.3)
+    private var angleTolerance = Float(0.2)
     private var albumNameText: String?
-
+    
     
     @IBOutlet weak var errorLabel: MessageLabel!
     @IBOutlet weak var backButton: Button!
@@ -59,7 +59,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         state = State.placeDome
         nextButton.setSecondary()
         backButton.setTitle("Back", for: [])
-
+        
         createAlbum.setSecondary()
     }
     
@@ -117,7 +117,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
             Album().createAlbum(withTitle: text) { album in
                 if let createdAlbum = album {
                     self.albumNameText = text
-
+                    
                     print("Album created with local identifier: \(createdAlbum.localIdentifier)")
                     self.switchToNextState()
                 } else {
@@ -126,7 +126,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
             }
         }
     }
-
+    
     
     @IBAction func nextButtonTapped(_ sender: Any) {
         if state == State.placeDome {
@@ -161,7 +161,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         var cameraPosition = simd_make_float3(camera.transform.columns.3)
         cameraPosition = simd_make_float3(cameraPosition.x, cameraPosition.y, cameraPosition.z)
         guard let cameraEulerAngle = sceneView.session.currentFrame?.camera.eulerAngles else { return }
-                
+        
         displayedDome.highlightClosest(cameraPos: cameraPosition, domeAnchor: simd_float3(displayedDome.worldPosition))
         
         var distance = Float(10.0)
@@ -170,20 +170,35 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
             distance = simd_distance(simd_float3(displayedDome.worldPosition) + simd_float3(domeTile.centerPoint), cameraPosition)
             let calculatedEuler = domeTile.calculatedEulerAngels
             
+            
+            
             rotationIsCorrect = (abs(abs(calculatedEuler.x) - abs(cameraEulerAngle.x)) < angleTolerance
                                  && abs(abs(calculatedEuler.y) - abs(cameraEulerAngle.y)) < angleTolerance)
             
-            if(!(abs(abs(calculatedEuler.x) - abs(cameraEulerAngle.x)) < angleTolerance
-               && abs(abs(calculatedEuler.y) - abs(cameraEulerAngle.y)) < angleTolerance)){
-                angleOfPhone.text = "Tilt phone"
-                angleOfPhone.backgroundColor = UIColor.WLightRed
-
-                
-            }else{
+            
+            if rotationIsCorrect {
                 angleOfPhone.text = "Perfect"
                 angleOfPhone.backgroundColor = UIColor.WGreen
-
+            } else {
+                var instruction = ""
+                // Check Y angle (corresponds to left-right)
+                let angleYDiff = abs(calculatedEuler.y) - abs(cameraEulerAngle.y)
+                if (abs(angleYDiff) > angleTolerance) {
+                    instruction += "↔️ \(String(format: "%.2f", angleYDiff)) "
+                }
+                // Check X angle (corresponds to up-down)
+                let angleXDiff = abs(calculatedEuler.x) - abs(cameraEulerAngle.x)
+                if (abs(angleXDiff) > angleTolerance) {
+                    instruction += "↕️ \(String(format: "%.2f", angleXDiff))"
+                }
+                angleOfPhone.text = instruction
+                angleOfPhone.backgroundColor = UIColor.WLightRed
             }
+            
+            
+            
+            
+            
             
         }
         
@@ -197,7 +212,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         } else if(distance <= Float(radius)*0.8+distanceTolerance){
             distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WLightRed
             distanceToCurrentlySelectedNodeLabel.text = "Move further away"
-
+            
         }
         if(distance > Float(radius)*0.8 && distance < (Float(radius)*0.8)+distanceTolerance
            && rotationIsCorrect) {
@@ -234,7 +249,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         
         print(imageWidth)
         print(imageHeight)
-
+        
         // Render the CIImage to a CGImage
         guard let cgImage = context.createCGImage(ciImage, from: CGRect(x: 0, y: 0, width: imageWidth, height: imageHeight)) else {
             return
@@ -247,7 +262,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
             let fetchOptions = PHFetchOptions()
             fetchOptions.predicate = NSPredicate(format: "title = %@", text)
             let album = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: fetchOptions).firstObject
-
+            
             if let album = album{
                 Album().saveImageToAlbum(image: snapshot, album: album) { success, error in
                     if success {
@@ -255,17 +270,17 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
                         
                     } else {
                         print("Failed to save image to album. Error: \(String(describing: error))")
-                       
+                        
                     }
                 }
             } else {
                 print("Album not found or image is nil.")
-               
+                
             }
         } else {
             print("No text entered.")
         }
-    
+        
         
     }
     
@@ -321,41 +336,41 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
             print("Album not found.")
         }
     }
-
     
-//    func shareAlbumWithAirDrop(albumName: String, presentingViewController: UIViewController) {
-//        let fetchOptions = PHFetchOptions()
-//        fetchOptions.predicate = NSPredicate(format: "title = %@", albumName)
-//
-//        let album = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: fetchOptions).firstObject
-//
-//        if let album = album {
-//            let albumURL = URL(string: "photos-redirect://")?.appendingPathComponent(album.localIdentifier)
-//
-//            let activityViewController = UIActivityViewController(activityItems: [albumURL as Any], applicationActivities: nil)
-//
-//            // Set the excluded activity types if desired
-//            activityViewController.excludedActivityTypes = [UIActivity.ActivityType.addToReadingList]
-//
-//            // Set the completion handler
-//            activityViewController.completionWithItemsHandler = { activityType, completed, returnedItems, error in
-//                if completed {
-//                    // Sharing was successful
-//                    print("Album shared with AirDrop.")
-//                } else if let error = error {
-//                    // Sharing failed with an error
-//                    print("Error sharing album: \(error.localizedDescription)")
-//                } else {
-//                    // Sharing was cancelled by the user
-//                    print("Sharing cancelled by user.")
-//                }
-//            }
-//
-//            presentingViewController.present(activityViewController, animated: true, completion: nil)
-//        } else {
-//            print("Album not found.")
-//        }
-//    }
+    
+    //    func shareAlbumWithAirDrop(albumName: String, presentingViewController: UIViewController) {
+    //        let fetchOptions = PHFetchOptions()
+    //        fetchOptions.predicate = NSPredicate(format: "title = %@", albumName)
+    //
+    //        let album = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: fetchOptions).firstObject
+    //
+    //        if let album = album {
+    //            let albumURL = URL(string: "photos-redirect://")?.appendingPathComponent(album.localIdentifier)
+    //
+    //            let activityViewController = UIActivityViewController(activityItems: [albumURL as Any], applicationActivities: nil)
+    //
+    //            // Set the excluded activity types if desired
+    //            activityViewController.excludedActivityTypes = [UIActivity.ActivityType.addToReadingList]
+    //
+    //            // Set the completion handler
+    //            activityViewController.completionWithItemsHandler = { activityType, completed, returnedItems, error in
+    //                if completed {
+    //                    // Sharing was successful
+    //                    print("Album shared with AirDrop.")
+    //                } else if let error = error {
+    //                    // Sharing failed with an error
+    //                    print("Error sharing album: \(error.localizedDescription)")
+    //                } else {
+    //                    // Sharing was cancelled by the user
+    //                    print("Sharing cancelled by user.")
+    //                }
+    //            }
+    //
+    //            presentingViewController.present(activityViewController, animated: true, completion: nil)
+    //        } else {
+    //            print("Album not found.")
+    //        }
+    //    }
     
     
     @objc func getDepthImage() -> CIImage {
