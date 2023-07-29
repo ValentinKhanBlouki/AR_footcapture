@@ -24,8 +24,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     public var displayedDome: Dome!
     public var lidarAvailable : Bool = false // default
     private var radius: CGFloat = 0.3
-    private var horizontalSegments: Int = 5
-    private var verticalSegments: Int = 20
+    private var horizontalSegments: Int = 5 // 3 horizontal segments -> first and last are not rendered
+    private var verticalSegments: Int = 30
+    
+    
     private var timer: Timer?
     private var distanceTolerance = Float(0.2)
     private var angleTolerance = Float(0.2)
@@ -56,7 +58,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         sceneView.addGestureRecognizer(tapGesture)
-        state = State.placeDome
+        state = State.albumName
         nextButton.setSecondary()
         backButton.setTitle("Back", for: [])
         
@@ -90,7 +92,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     }
     
     @objc func dismissKeyboard() {
-        //Causes the view (or one of its embedded text fields) to resign the first responder status.
         view.endEditing(true)
     }
     
@@ -228,34 +229,24 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         let imageBaseFileName = Int(arc4random_uniform(10000))
         
         
-        //let snapshot = sceneView.snapshot()
-        // Ensure you have a reference to your ARSession and ARFrame
         let session = sceneView.session
         guard let currentFrame = session.currentFrame else {
             return
         }
-        // Retrieve the camera image from the ARFrame
         let pixelBuffer = currentFrame.capturedImage
         
-        // Create a CIImage from the pixel buffer
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
         
-        // Create a CIContext
         let context = CIContext()
         
-        // Render the CIImage to a CGImage
         let imageWidth = CVPixelBufferGetWidth(pixelBuffer)
         let imageHeight = CVPixelBufferGetHeight(pixelBuffer)
+
         
-        print(imageWidth)
-        print(imageHeight)
-        
-        // Render the CIImage to a CGImage
         guard let cgImage = context.createCGImage(ciImage, from: CGRect(x: 0, y: 0, width: imageWidth, height: imageHeight)) else {
             return
         }
         
-        // Create a UIImage from the CGImage
         let snapshot = UIImage(cgImage: cgImage)
         
         if let text = albumName.text {
@@ -280,8 +271,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         } else {
             print("No text entered.")
         }
-        
-        
     }
     
     
@@ -311,19 +300,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
             if !assetsToShare.isEmpty {
                 let activityViewController = UIActivityViewController(activityItems: assetsToShare, applicationActivities: nil)
                 
-                // Set the excluded activity types if desired
                 activityViewController.excludedActivityTypes = [UIActivity.ActivityType.addToReadingList]
                 
-                // Set the completion handler
                 activityViewController.completionWithItemsHandler = { activityType, completed, returnedItems, error in
                     if completed {
-                        // Sharing was successful
                         print("Assets shared with AirDrop.")
                     } else if let error = error {
-                        // Sharing failed with an error
                         print("Error sharing assets: \(error.localizedDescription)")
                     } else {
-                        // Sharing was cancelled by the user
                         print("Sharing cancelled by user.")
                     }
                 }
@@ -336,42 +320,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
             print("Album not found.")
         }
     }
-    
-    
-    //    func shareAlbumWithAirDrop(albumName: String, presentingViewController: UIViewController) {
-    //        let fetchOptions = PHFetchOptions()
-    //        fetchOptions.predicate = NSPredicate(format: "title = %@", albumName)
-    //
-    //        let album = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: fetchOptions).firstObject
-    //
-    //        if let album = album {
-    //            let albumURL = URL(string: "photos-redirect://")?.appendingPathComponent(album.localIdentifier)
-    //
-    //            let activityViewController = UIActivityViewController(activityItems: [albumURL as Any], applicationActivities: nil)
-    //
-    //            // Set the excluded activity types if desired
-    //            activityViewController.excludedActivityTypes = [UIActivity.ActivityType.addToReadingList]
-    //
-    //            // Set the completion handler
-    //            activityViewController.completionWithItemsHandler = { activityType, completed, returnedItems, error in
-    //                if completed {
-    //                    // Sharing was successful
-    //                    print("Album shared with AirDrop.")
-    //                } else if let error = error {
-    //                    // Sharing failed with an error
-    //                    print("Error sharing album: \(error.localizedDescription)")
-    //                } else {
-    //                    // Sharing was cancelled by the user
-    //                    print("Sharing cancelled by user.")
-    //                }
-    //            }
-    //
-    //            presentingViewController.present(activityViewController, animated: true, completion: nil)
-    //        } else {
-    //            print("Album not found.")
-    //        }
-    //    }
-    
     
     @objc func getDepthImage() -> CIImage {
         let depthMap = sceneView.session.currentFrame?.sceneDepth?.depthMap
