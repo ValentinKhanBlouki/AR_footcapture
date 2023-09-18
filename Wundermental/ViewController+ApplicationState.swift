@@ -69,6 +69,7 @@ extension ViewController {
                 nextButton.isHidden = true
                 backButton.isHidden = true
                 createAlbum.isHidden = false
+                createAlbum.setTitle("Create Album", for: [])
                 albumName.isHidden = false
                 instructionLabel.isHidden = true
                 distanceToCurrentlySelectedNodeLabel.isHidden = true
@@ -117,7 +118,7 @@ extension ViewController {
                 displayedDome.isHidden = true
                 createAlbum.isHidden = false
                 createAlbum.setSecondary()
-                createAlbum.setTitle("Make Picture", for: [])
+                createAlbum.setTitle("Take Picture", for: [])
                 
                 nextButton.isEnabled = true
                 nextButton.setTitle("Finish", for: [])
