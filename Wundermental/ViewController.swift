@@ -246,11 +246,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         guard let currentFrame = session.currentFrame else {
             return
         }
+        let context = CIContext()
         
         // Extract photographic snapshot (regular image).
         let pixelBuffer = currentFrame.capturedImage
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-        let context = CIContext()
         let imageWidth = CVPixelBufferGetWidth(pixelBuffer)
         let imageHeight = CVPixelBufferGetHeight(pixelBuffer)
         guard let cgImage = context.createCGImage(ciImage, from: CGRect(x: 0, y: 0, width: imageWidth, height: imageHeight)) else {
@@ -259,8 +259,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         let snapshot = UIImage(cgImage: cgImage)
         
         // Extract Depth Map.
-        let depthMap = sceneView.session.currentFrame?.sceneDepth?.depthMap
-        let depthImage = CIImage(cvPixelBuffer: depthMap!)
+        let depthMap: UIImage?
+
+        if lidarAvailable {
+            let depthMapPixelBuffer = sceneView.session.currentFrame?.sceneDepth?.depthMap
+            let depthMapCI = CIImage(cvPixelBuffer: depthMapPixelBuffer!)
+            let depthMapWidth = CVPixelBufferGetWidth(depthMapPixelBuffer!)
+            let depthMapHeight = CVPixelBufferGetHeight(depthMapPixelBuffer!)
+            guard let depthMapCGI = context.createCGImage(depthMapCI, from: CGRect(x: 0, y: 0, width: depthMapWidth, height: depthMapHeight)) else {
+                return
+            }
+            depthMap = UIImage(cgImage: depthMapCGI)
+        } else {
+            depthMap = nil
+        }
+    
         
         // Save both in album.
         if let text = albumName.text {
@@ -270,38 +283,23 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
             
             // Save snapshot.
             if let album = album{
-                Album().saveHeicImageToAlbum(image: snapshot, album: album) { success, error in
+                Album().saveImagesToPhotoAlbum(image: snapshot, depthMap: depthMap, album: album) { success, error in
                     if success {
                         print("Image saved to album successfully.")
                         
                     } else {
                         print("Failed to save image to album. Error: \(String(describing: error))")
-                        
                     }
                 }
             } else {
                 print("Album not found or image is nil.")
             }
-            // Save depth map.
-            if let album = album{
-                Album().saveHeicImageToAlbum(image: snapshot, album: album) { success, error in
-                    if success {
-                        print("Image saved to album successfully.")
-                        
-                    } else {
-                        print("Failed to save image to album. Error: \(String(describing: error))")
-                        
-                    }
-                }
-            } else {
-                print("Album not found or image is nil.")
-            }
-            
-            
         } else {
             print("No text entered.")
         }
     }
+    
+    
     
     
     // ///////////////////////////////////////////////////////////////////////////////////////////////
