@@ -112,19 +112,20 @@ class Album{
     
     
     
-    func saveHeicImageToAlbum(image: UIImage, album: PHAssetCollection, completion: @escaping (Bool, Error?) -> Void) {
+    func saveImagesToPhotoAlbum(image: UIImage, depthMap: UIImage?, album: PHAssetCollection, completion: @escaping (Bool, Error?) -> Void) {
         
         guard let imageData = image.heic(compressionQuality: 1.0) else {
             print("Failed to convert image to HEIC data.")
             return
         }
         
-        
+                    
         
         PHPhotoLibrary.shared().performChanges({
             let creationRequest = PHAssetCreationRequest.forAsset()
             let createOptions:PHAssetResourceCreationOptions = PHAssetResourceCreationOptions()
             creationRequest.addResource(with: .photo, data: imageData, options: createOptions)
+
 
 
             guard let assetPlaceholder = creationRequest.placeholderForCreatedAsset else {
@@ -138,10 +139,31 @@ class Album{
         }) { success, error in
             completion(success, error)
         }
+        
+        if depthMap != nil {
+            guard let depthMapData = depthMap!.heic(compressionQuality: 1.0) else {
+                print("Failed to convert image to HEIC data.")
+                return
+            }
+            
+            PHPhotoLibrary.shared().performChanges({
+                let creationRequest = PHAssetCreationRequest.forAsset()
+                let createOptions:PHAssetResourceCreationOptions = PHAssetResourceCreationOptions()
+                creationRequest.addResource(with: .photo, data: depthMapData, options: createOptions)
+                
+                guard let assetPlaceholder = creationRequest.placeholderForCreatedAsset else {
+                    completion(false, nil)
+                    return
+                }
+                
+                let albumChangeRequest = PHAssetCollectionChangeRequest(for: album)
+                albumChangeRequest?.addAssets([assetPlaceholder] as NSArray)
+                
+            }) { success, error in
+                completion(success, error)
+            }
+        }
     }
-    
-    
-    
 }
 
     
