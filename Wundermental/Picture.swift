@@ -112,12 +112,15 @@ class Album{
     
     
     
-    func saveImageToAlbum(image: UIImage, album: PHAssetCollection, completion: @escaping (Bool, Error?) -> Void) {
+    func saveHeicImageToAlbum(image: UIImage, album: PHAssetCollection, completion: @escaping (Bool, Error?) -> Void) {
         
         guard let imageData = image.heic(compressionQuality: 1.0) else {
             print("Failed to convert image to HEIC data.")
             return
         }
+        
+        
+        
         PHPhotoLibrary.shared().performChanges({
             let creationRequest = PHAssetCreationRequest.forAsset()
             let createOptions:PHAssetResourceCreationOptions = PHAssetResourceCreationOptions()
@@ -136,6 +139,9 @@ class Album{
             completion(success, error)
         }
     }
+    
+    
+    
 }
 
     

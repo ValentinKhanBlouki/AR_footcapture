@@ -47,6 +47,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     @IBOutlet weak var albumName: UITextField!
     
     
+    // ///////////////////////////////////////////////////////////////////////////////////////////////
+    // VIEW SETUP
+    // ///////////////////////////////////////////////////////////////////////////////////////////////
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -85,6 +88,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         }
     }
     
+    @objc func displayLiDARAlert() {
+        let alertController = UIAlertController(title: "No LiDAR Sensor", message: "Your phone does not have the LiDAR sensor necessary to acquire depth data. Therefore only normal images will be saved.", preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default) { (_) in
+            // Continue with normal image saving or perform other actions
+        }
+        alertController.addAction(okAction)
+        present(alertController, animated: true, completion: nil)
+    }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -95,6 +106,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         view.endEditing(true)
     }
     
+    // ///////////////////////////////////////////////////////////////////////////////////////////////
+    // BUTTONS
+    // ///////////////////////////////////////////////////////////////////////////////////////////////
     
     @IBAction func createButtonTapped(_ sender: Any){
         if (state == State.detailPhotos) {
@@ -146,6 +160,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         switchToPreviousState()
     }
     
+    // ///////////////////////////////////////////////////////////////////////////////////////////////
+    // CONTINUOUS MEASUREMENT
+    // ///////////////////////////////////////////////////////////////////////////////////////////////
     
     @objc func scan3DObject() {
         
@@ -178,7 +195,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
             
             
             if rotationIsCorrect {
-                angleOfPhone.text = "Perfect"
+                angleOfPhone.text = "Angle Perfect"
                 angleOfPhone.backgroundColor = UIColor.WGreen
             } else {
                 var instruction = ""
@@ -195,17 +212,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
                 angleOfPhone.text = instruction
                 angleOfPhone.backgroundColor = UIColor.WLightRed
             }
-            
-            
-            
-            
-            
-            
         }
         
         if(distance > Float(radius)*0.8 && distance < (Float(radius)*0.8)+distanceTolerance) {
             distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WGreen
-            distanceToCurrentlySelectedNodeLabel.text = "Perfect"
+            distanceToCurrentlySelectedNodeLabel.text = "Distance Perfect"
             
         } else if(distance >= Float(radius)*0.8){
             distanceToCurrentlySelectedNodeLabel.backgroundColor = UIColor.WLightRed
@@ -224,38 +235,42 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         }
     }
     
+    // ///////////////////////////////////////////////////////////////////////////////////////////////
+    // IMAGE ACQUISITION
+    // ///////////////////////////////////////////////////////////////////////////////////////////////
+    
     @objc func takePicture() {
-        
-        let imageBaseFileName = Int(arc4random_uniform(10000))
-        
+        let imageBaseFileName = Int(arc4random_uniform(10000)) // QUESTION: never used?
         
         let session = sceneView.session
         guard let currentFrame = session.currentFrame else {
             return
         }
+        
+        // Extract photographic snapshot (regular image).
         let pixelBuffer = currentFrame.capturedImage
-        
         let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-        
         let context = CIContext()
-        
         let imageWidth = CVPixelBufferGetWidth(pixelBuffer)
         let imageHeight = CVPixelBufferGetHeight(pixelBuffer)
-
-        
         guard let cgImage = context.createCGImage(ciImage, from: CGRect(x: 0, y: 0, width: imageWidth, height: imageHeight)) else {
             return
         }
-        
         let snapshot = UIImage(cgImage: cgImage)
         
+        // Extract Depth Map.
+        let depthMap = sceneView.session.currentFrame?.sceneDepth?.depthMap
+        let depthImage = CIImage(cvPixelBuffer: depthMap!)
+        
+        // Save both in album.
         if let text = albumName.text {
             let fetchOptions = PHFetchOptions()
             fetchOptions.predicate = NSPredicate(format: "title = %@", text)
             let album = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: fetchOptions).firstObject
             
+            // Save snapshot.
             if let album = album{
-                Album().saveImageToAlbum(image: snapshot, album: album) { success, error in
+                Album().saveHeicImageToAlbum(image: snapshot, album: album) { success, error in
                     if success {
                         print("Image saved to album successfully.")
                         
@@ -266,15 +281,32 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
                 }
             } else {
                 print("Album not found or image is nil.")
-                
             }
+            // Save depth map.
+            if let album = album{
+                Album().saveHeicImageToAlbum(image: snapshot, album: album) { success, error in
+                    if success {
+                        print("Image saved to album successfully.")
+                        
+                    } else {
+                        print("Failed to save image to album. Error: \(String(describing: error))")
+                        
+                    }
+                }
+            } else {
+                print("Album not found or image is nil.")
+            }
+            
+            
         } else {
             print("No text entered.")
         }
     }
     
     
-    
+    // ///////////////////////////////////////////////////////////////////////////////////////////////
+    // IMAGE ACQUISITION
+    // ///////////////////////////////////////////////////////////////////////////////////////////////
     func shareAssetsWithAirDrop(albumName: String, presentingViewController: UIViewController) {
         let fetchOptions = PHFetchOptions()
         fetchOptions.predicate = NSPredicate(format: "title = %@", albumName)
@@ -321,20 +353,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
         }
     }
     
-    @objc func getDepthImage() -> CIImage {
-        let depthMap = sceneView.session.currentFrame?.sceneDepth?.depthMap
-        let depthImage = CIImage(cvPixelBuffer: depthMap!)
-        return depthImage
-    }
-    
-    @objc func displayLiDARAlert() {
-        let alertController = UIAlertController(title: "No LiDAR Sensor", message: "Your phone does not have the LiDAR sensor necessary to acquire depth data. Therefore only normal images will be saved.", preferredStyle: .alert)
-        let okAction = UIAlertAction(title: "OK", style: .default) { (_) in
-            // Continue with normal image saving or perform other actions
-        }
-        alertController.addAction(okAction)
-        present(alertController, animated: true, completion: nil)
-    }
     
     
     //MARK: Object Placement
