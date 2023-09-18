@@ -68,6 +68,8 @@ extension ViewController {
                 
                 nextButton.isHidden = true
                 backButton.isHidden = true
+                createAlbum.isHidden = false
+                albumName.isHidden = false
                 instructionLabel.isHidden = true
                 distanceToCurrentlySelectedNodeLabel.isHidden = true
                 angleOfPhone.isHidden = true
@@ -114,6 +116,7 @@ extension ViewController {
                 instructionLabel.display(Instructions.detailPhotos)
                 displayedDome.isHidden = true
                 createAlbum.isHidden = false
+                createAlbum.setSecondary()
                 createAlbum.setTitle("Make Picture", for: [])
                 
                 nextButton.isEnabled = true
@@ -133,6 +136,7 @@ extension ViewController {
                 nextButton.setTitle("Share", for: [])
                 createAlbum.isHidden = true
                 
+                backButton.setTitle("Restart", for: [])
                 backButton.setSecondary()
                 
                 backButton.isHidden = false

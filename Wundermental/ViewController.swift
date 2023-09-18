@@ -157,6 +157,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     }
     
     @IBAction func backButtonTapped(_ sender: Any) {
+        if state == State.finish {
+            state = State.albumName
+            displayedDome = nil
+            sceneView.session.remove(anchor: domeAnchor)
+            return
+            
+        }
         switchToPreviousState()
     }
     
@@ -166,11 +173,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate{
     
     @objc func scan3DObject() {
         
-        if displayedDome == nil {
+        if displayedDome == nil || state != State.scanning{
             return
         }
-        if displayedDome.allDomeTilesAreScanned() {
-            switchToNextState()
+        if displayedDome.allDomeTilesAreScanned(){
+            state = State.detailPhotos
+            return
         }
         guard let camera = sceneView.session.currentFrame?.camera else {
             return
